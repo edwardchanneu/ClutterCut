@@ -19,6 +19,16 @@ vi.mock('../lib/supabase', () => ({
 vi.mock('../hooks/useAuth')
 import { useAuth } from '../hooks/useAuth'
 
+// Mock useGuest to control guest state
+vi.mock('../context/GuestContext', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../context/GuestContext')>()
+  return {
+    ...actual,
+    useGuest: vi.fn(() => ({ isGuest: false, setIsGuest: vi.fn() }))
+  }
+})
+import { useGuest } from '../context/GuestContext'
+
 interface WrapperProps {
   initialPath: string
 }
@@ -50,6 +60,7 @@ describe('ProtectedRoute', () => {
       session: { user: { id: 'u1' } } as Session,
       loading: false
     })
+    vi.mocked(useGuest).mockReturnValue({ isGuest: false, setIsGuest: vi.fn() })
     renderWithRouter({ initialPath: '/history' })
     expect(screen.getByText('History Screen')).toBeInTheDocument()
   })
@@ -59,6 +70,7 @@ describe('ProtectedRoute', () => {
       session: { user: { id: 'u1' } } as Session,
       loading: false
     })
+    vi.mocked(useGuest).mockReturnValue({ isGuest: true, setIsGuest: vi.fn() })
     renderWithRouter({ initialPath: '/history' })
     expect(screen.queryByText('History Screen')).not.toBeInTheDocument()
     expect(screen.getByText('Login Screen')).toBeInTheDocument()
@@ -69,6 +81,7 @@ describe('ProtectedRoute', () => {
       session: null,
       loading: false
     })
+    vi.mocked(useGuest).mockReturnValue({ isGuest: true, setIsGuest: vi.fn() })
     renderWithRouter({ initialPath: '/organize' })
     expect(screen.getByText('Organize Screen')).toBeInTheDocument()
   })
