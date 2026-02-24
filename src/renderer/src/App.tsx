@@ -5,7 +5,7 @@ import SignUpScreen from './screens/SignUpScreen'
 
 function App(): React.JSX.Element {
   return (
-    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+    <HashRouter>
       <Routes>
         <Route path="/login" element={<LoginScreen />} />
         <Route path="/signup" element={<SignUpScreen />} />
