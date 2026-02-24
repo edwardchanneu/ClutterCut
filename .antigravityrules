@@ -1,0 +1,254 @@
+# ClutterCut
+
+> AI coding assistant instructions for the ClutterCut project.
+> Read this file fully before writing any code, suggesting any architecture, or making any changes.
+> Always look for documentation before implementing any feature.
+> If you are unsure about something, ask the user.
+> Role play as a professional full-stack software engineer with 15 years of experience.
+
+---
+
+## 1. Project Overview & PRD
+
+- **Project Overview**: See [`project_memory/project-overview.md`](project_memory/project-overview.md).
+- **Product Requirements Document (PRD)**: See [`project_memory/clutter-cut-prd.md`](project_memory/clutter-cut-prd.md).
+
+---
+
+## 2. Tech Stack & Versions
+
+| Layer | Technology | Notes |
+|---|---|---|
+| Desktop Shell | Electron (latest stable) | Main process owns all file system access |
+| Frontend | React 18 | Renderer process only — no direct `fs` usage |
+| Backend / File Ops | Node.js via Electron main process | `fs/promises` APIs only |
+| Server State & Caching | TanStack Query v5 | Used for all Supabase data fetching |
+| Cloud DB & Auth | Supabase (PostgreSQL + Supabase Auth) | Email/password auth only for MVP |
+| IPC | Electron `ipcMain` / `ipcRenderer` | All renderer↔main communication |
+| Testing (Unit) | Vitest | Co-located `*.test.ts` files |
+| Testing (E2E) | Playwright | `e2e/` directory, runs in CI |
+| CI/CD | GitHub Actions | `.github/workflows/ci.yml` |
+| Distribution | `electron-builder` via GitHub Releases | `.dmg` (macOS), `.exe` NSIS (Windows) |
+| Language | TypeScript (strict mode) | Both main and renderer processes |
+
+---
+
+## 3. Architecture Overview
+
+See [`project_memory/architecture.md`](project_memory/architecture.md).
+
+### Key Architectural Rules
+
+1. **The renderer process NEVER touches the file system.** All `fs` operations happen in `src/main/services/`. The renderer invokes them via typed IPC channels defined in `src/shared/ipcChannels.ts`.
+2. **All IPC channels are typed end-to-end.** Define request/response types in `src/shared/ipcChannels.ts` and use them in both `ipcMain.handle()` and `ipcRenderer.invoke()`.
+3. **Supabase is only accessed from the renderer** via the client in `src/renderer/lib/supabase.ts`. The main process never makes Supabase calls directly.
+4. **TanStack Query wraps all Supabase reads.** Never use raw `supabase.from()` calls in component bodies — always go through a query hook in `src/renderer/hooks/`.
+5. **Offline queue is persisted to disk** in Electron `app.getPath('userData')` directory as a JSON file. It must survive app restarts.
+
+---
+
+## 4. Data Model
+
+See [`project_memory/data-model.md`](project_memory/data-model.md).
+
+---
+
+## 5. Screen Inventory & Routes
+
+See [`project_memory/screens-and-routes.md`](project_memory/screens-and-routes.md).
+
+---
+
+## 6. UI Component Behavior (from Mockups)
+
+See [`project_memory/ui-components.md`](project_memory/ui-components.md).
+
+---
+
+## 7. User Flow Descriptions
+
+See [`project_memory/user-flows.md`](project_memory/user-flows.md).
+
+---
+
+## 8. Naming Conventions & Coding Standards
+
+### TypeScript
+- **Strict mode on.** No `any`. Use `unknown` + type guards when needed.
+- Prefer `interface` over `type` for object shapes; use `type` for unions/aliases.
+- Name booleans with `is`, `has`, or `can` prefix: `isOffline`, `hasRules`, `canProceed`.
+- All async functions return `Promise<T>` with explicit return types.
+- Use named exports everywhere. No default exports except route components and `App.tsx`.
+
+### React Components
+- Functional components only. No class components.
+- Props interfaces named `[ComponentName]Props`.
+- One component per file. File name matches component name (PascalCase).
+- Co-locate component-specific hooks in the same file if under ~30 lines; extract to `hooks/` otherwise.
+- Never put business logic or IPC calls directly in TSX — extract to hooks or handlers.
+
+### IPC Channels
+- All channel names defined as constants in `src/shared/ipcChannels.ts`.
+- Format: `SCREAMING_SNAKE_CASE` — e.g., `SELECT_FOLDER`, `EXECUTE_ORGANIZE`, `CAPTURE_SNAPSHOT`.
+- Every channel has a typed request and response interface in the same file.
+
+### File & Folder Naming
+- React components: `PascalCase.tsx`
+- Hooks: `camelCase.ts` with `use` prefix
+- Services (main process): `camelCase.ts` with `Service` suffix
+- IPC handlers: `camelCase.ts` with `Handlers` suffix
+- Test files: co-located `[filename].test.ts` or in `e2e/` for Playwright
+
+### CSS / Styling
+- Use Tailwind CSS utility classes.
+- No inline styles except for dynamic values that cannot be expressed as utilities.
+- Color palette: black (`0A0A0A`) for primary CTAs, light gray (`F8FAFB`) for backgrounds, white for cards, muted gray (`6B7280`) for secondary text.
+- All interactive elements must have visible focus rings (`focus-visible:ring-2`).
+
+---
+
+## 9. Testing Strategy
+
+### Unit Tests (Vitest)
+- **Coverage goal:** 80% line coverage on `src/main/services/` and all hooks in `src/renderer/hooks/`
+- Every GitHub Issue acceptance criterion must map to at least one unit test
+- Test files co-located with source: `fileOrganizer.test.ts` next to `fileOrganizer.ts`
+- Use `vi.mock()` for `fs/promises` in main process tests — never touch the real file system
+- Mock Supabase client with `vi.mock('../lib/supabase')`
+
+**Required test cases per feature (from Issues):**
+- `fileOrganizer`: successful move, folder creation, conflict suffix resolution (`_1`, `_2`), partial failure
+- `snapshotService`: before/after snapshot format matches spec
+- `undoService`: successful undo, missing file skipped, delta calculation correctness
+- `offlineQueue`: write/read survives serialization, sync on reconnect, retry on failure
+- Auth hooks: session found & valid, expired, not found
+- Rule validation: empty condition, empty destination, illegal characters, duplicate warning
+
+### E2E Tests (Playwright)
+- Located in `e2e/` directory
+- Run against a built Electron app using `@playwright/test` + `electron` launch config
+- Required flows (from Issue #18 and #22):
+  1. Authenticated user: full organize flow → history → undo
+  2. Guest user: full organize flow, no history access
+  3. Back navigation from Preview preserves rules
+  4. Empty folder edge case
+  5. Offline: valid cached session → auto login → organize → local queue
+  6. Offline: expired session → login screen with message
+  7. Sync: queued run syncs on reconnect → pending indicator removed
+
+### CI
+- All unit tests and linting run on every push and PR to `main` and `develop`
+- E2E tests run on PRs to `main` only (slower, require build step)
+- **No merge permitted if CI is red**
+
+---
+
+## 10. Scrum & Git Workflow
+
+### Branch Naming
+```
+feature/<issue-number>-short-description
+fix/<issue-number>-short-description
+chore/<issue-number>-short-description
+```
+Examples:
+- `feature/7-file-extension-rule`
+- `fix/12-conflict-suffix-resolution`
+- `chore/5-github-actions-ci`
+
+### Commit Message Format
+Follow **Conventional Commits**:
+```
+<type>(#<issue-number>): <short description>
+
+[optional body]
+[optional footer]
+```
+Examples:
+```
+feature(#7): implement file extension rule condition
+fix(#12): append _1 suffix on filename conflict
+chore(#5): add GitHub Actions CI workflow
+test(#16): add unit tests for undoService delta calculation
+```
+Types: `feature`, `fix`, `chore`, `test`, `docs`, `refactor`, `style`, `ci`
+
+### PR Workflow
+1. Branch from `develop`
+2. PR title format: `[#<issue-number>] Short description of change`
+3. PR description must link to the GitHub Issue: `Closes #<issue-number>`
+4. All acceptance criteria from the linked Issue must be checked off before requesting review
+5. Minimum 1 reviewer approval required before merge
+6. Squash merge into `develop`; releases are cut from `main` via version tags
+
+### Release Process
+- Tag `main` with `vX.Y.Z` to trigger `.github/workflows/release.yml`
+- Release workflow builds `.dmg` and `.exe` and uploads as GitHub Release assets
+- Release notes include version, date, and changelog
+
+---
+
+## 11. Security Requirements
+
+- **File system access is scoped** to the folder the user explicitly selects. Never traverse outside the selected path.
+- **No file content is ever read** — only names, extensions, and paths.
+- **No file content is ever removed.**
+- **No file data is sent to Supabase** — only metadata (paths, names, rule config, plain-text snapshot trees).
+- **Supabase RLS must be enabled** on `organization_runs`. Policy: `user_id = auth.uid()` for all operations.
+- **Session tokens** are stored in Electron's encrypted store (`electron-store` with encryption key derived from machine ID), never in plain `localStorage`.
+- **IPC handlers must validate all inputs** from the renderer before performing any file operation. Treat renderer input as untrusted.
+- **Context isolation ON, Node integration OFF** in renderer `BrowserWindow` config. All Node access via the preload script's `contextBridge`.
+- Destination folder name inputs must be sanitized to reject OS-illegal characters before any file operation.
+
+---
+
+## 12. Accessibility Requirements
+
+- All interactive elements are keyboard navigable and have visible focus states (`focus-visible:ring-2 ring-offset-2`).
+- All icon-only buttons (trash, undo, chevron) have `aria-label` attributes.
+- Form inputs have associated `<label>` elements (not just placeholder text).
+- Color is never the sole indicator of state — use text labels or icons alongside color.
+- Confirmation dialogs use `role="dialog"` with `aria-modal="true"` and `aria-labelledby`.
+- The offline status indicator uses `role="status"` and `aria-live="polite"`.
+
+---
+
+## 13. Do's and Don'ts
+
+### ✅ DO
+
+- Use `fs/promises` (async) for all file operations in the main process
+- Use TanStack Query for all Supabase reads — include loading, error, and empty states
+- Capture both before and after snapshots atomically around the execute step
+- Persist the offline queue to disk before acknowledging success to the renderer
+- Use the `src/shared/ipcChannels.ts` constants for every IPC call — never hardcode channel strings
+- Show a confirmation dialog before any destructive action (undo, cancel)
+- Validate destination folder names against the OS-illegal character list before execution
+- Write a unit test for every acceptance criterion in the linked GitHub Issue
+- Keep the renderer stateless re: file system — all truth about what files exist lives in the main process or Supabase
+
+### ❌ DON'T
+
+- **Don't access `fs` from the renderer process — ever.** This is the #1 architectural rule.
+- Don't add libraries without checking this file first. Prefer what's already in the stack.
+- Don't implement AI-suggested rules, recursive subfolder organization, multi-condition rules, drag-and-drop reordering, cloud folder support, or in-app signup — these are explicitly out of scope for MVP (PRD §1.5)
+- Don't implement Linux support for MVP
+- Don't add an auto-update mechanism for MVP
+- Don't implement redo (undo of undo) for MVP
+- Don't use `localStorage` in the renderer for anything security-sensitive (use Electron's encrypted store via IPC)
+- Don't write snapshot data as binary — plain text only (see PRD §4.4 Snapshot Format)
+- Don't roll back successfully moved files on partial failure — report the failure and let the user undo manually
+- Don't block the UI during file operations — all execution is async with a loading state
+- Don't delete history entries after undo — mark them as `is_undone: true` and keep them in the log
+- Don't implement guest-to-account upgrade flow for MVP
+
+---
+
+## 14. Environment Variables
+
+```
+VITE_SUPABASE_URL=          # Supabase project URL
+VITE_SUPABASE_ANON_KEY=     # Supabase anon public key
+```
+
+Never commit `.env` files. Use `.env.example` for documentation. All env vars are injected at build time via Vite — they are only used in the renderer process.
