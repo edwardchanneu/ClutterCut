@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, act } from '@testing-library/react'
 import { describe, it, expect } from 'vitest'
-import { GuestProvider, useGuest } from './GuestContext'
+import { useGuest } from './GuestContext'
+import { GuestProvider } from './GuestProvider'
 
 function ReadGuest(): React.JSX.Element {
   const { isGuest } = useGuest()

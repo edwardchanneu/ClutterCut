@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
-import { GuestContext } from '../context/GuestContext'
+import { GuestProvider } from '../context/GuestProvider'
 import { ProtectedRoute } from './ProtectedRoute'
 import type { Session } from '@supabase/supabase-js'
 
@@ -20,13 +20,12 @@ vi.mock('../hooks/useAuth')
 import { useAuth } from '../hooks/useAuth'
 
 interface WrapperProps {
-  isGuest: boolean
   initialPath: string
 }
 
-function renderWithRouter({ isGuest, initialPath }: WrapperProps): void {
+function renderWithRouter({ initialPath }: WrapperProps): void {
   render(
-    <GuestContext.Provider value={{ isGuest, setIsGuest: () => { } }}>
+    <GuestProvider>
       <MemoryRouter initialEntries={[initialPath]}>
         <Routes>
           <Route path="/login" element={<div>Login Screen</div>} />
@@ -41,7 +40,7 @@ function renderWithRouter({ isGuest, initialPath }: WrapperProps): void {
           />
         </Routes>
       </MemoryRouter>
-    </GuestContext.Provider>
+    </GuestProvider>
   )
 }
 
@@ -51,7 +50,7 @@ describe('ProtectedRoute', () => {
       session: { user: { id: 'u1' } } as Session,
       loading: false
     })
-    renderWithRouter({ isGuest: false, initialPath: '/history' })
+    renderWithRouter({ initialPath: '/history' })
     expect(screen.getByText('History Screen')).toBeInTheDocument()
   })
 
@@ -60,7 +59,7 @@ describe('ProtectedRoute', () => {
       session: { user: { id: 'u1' } } as Session,
       loading: false
     })
-    renderWithRouter({ isGuest: true, initialPath: '/history' })
+    renderWithRouter({ initialPath: '/history' })
     expect(screen.queryByText('History Screen')).not.toBeInTheDocument()
     expect(screen.getByText('Login Screen')).toBeInTheDocument()
   })
@@ -70,7 +69,7 @@ describe('ProtectedRoute', () => {
       session: null,
       loading: false
     })
-    renderWithRouter({ isGuest: true, initialPath: '/organize' })
+    renderWithRouter({ initialPath: '/organize' })
     expect(screen.getByText('Organize Screen')).toBeInTheDocument()
   })
 })

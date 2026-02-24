@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react'
+import { createContext, useContext } from 'react'
 
 interface GuestContextValue {
   isGuest: boolean
@@ -10,16 +10,10 @@ export const GuestContext = createContext<GuestContextValue>({
   setIsGuest: () => {}
 })
 
-interface GuestProviderProps {
-  children: React.ReactNode
-}
-
-export function GuestProvider({ children }: GuestProviderProps): React.JSX.Element {
-  const [isGuest, setIsGuest] = useState(false)
-
-  return <GuestContext.Provider value={{ isGuest, setIsGuest }}>{children}</GuestContext.Provider>
-}
-
 export function useGuest(): GuestContextValue {
-  return useContext(GuestContext)
+  const context = useContext(GuestContext)
+  if (context === undefined) {
+    throw new Error('useGuest must be used within a GuestProvider')
+  }
+  return context
 }

@@ -3,7 +3,7 @@ import { useGuest } from '../context/GuestContext'
 import { useAuth } from '../hooks/useAuth'
 
 interface ProtectedRouteProps {
-    children: React.ReactNode
+  children: React.ReactNode
 }
 
 /**
@@ -14,22 +14,22 @@ interface ProtectedRouteProps {
  * Renders nothing while auth state is still loading.
  */
 export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Element | null {
-    const { isGuest } = useGuest()
-    const { session, loading } = useAuth()
+  const { isGuest } = useGuest()
+  const { session, loading } = useAuth()
 
-    if (isGuest) {
-        return <Navigate to="/login" replace />
-    }
+  if (isGuest) {
+    return <Navigate to="/login" replace />
+  }
 
-    if (loading) {
-        return null
-    }
+  if (loading) {
+    return null
+  }
 
-    if (!session) {
-        return <Navigate to="/login" replace />
-    }
+  if (!session) {
+    return <Navigate to="/login" replace />
+  }
 
-    return <>{children}</>
+  return <>{children}</>
 }
 
 export default ProtectedRoute

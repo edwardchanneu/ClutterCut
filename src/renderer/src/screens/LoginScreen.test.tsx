@@ -27,7 +27,6 @@ vi.mock('../context/GuestContext', () => ({
   useGuest: () => ({ isGuest: false, setIsGuest: mockSetIsGuest })
 }))
 
-
 describe('LoginScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks()

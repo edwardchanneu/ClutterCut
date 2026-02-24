@@ -1,5 +1,5 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { GuestProvider } from './context/GuestContext'
+import { GuestProvider } from './context/GuestProvider'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import LoginScreen from './screens/LoginScreen'
 import OrganizeScreen from './screens/OrganizeScreen'
