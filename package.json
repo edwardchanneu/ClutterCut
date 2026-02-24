@@ -23,6 +23,7 @@
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
+    "@supabase/supabase-js": "^2.97.0",
     "electron-updater": "^6.3.9",
     "react-router-dom": "^6.30.3"
   },
