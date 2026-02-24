@@ -235,7 +235,6 @@ Types: `feature`, `fix`, `chore`, `test`, `docs`, `refactor`, `style`, `ci`
 - Don't implement Linux support for MVP
 - Don't add an auto-update mechanism for MVP
 - Don't implement redo (undo of undo) for MVP
-- Don't use `localStorage` in the renderer for anything security-sensitive (use Electron's encrypted store via IPC)
 - Don't write snapshot data as binary — plain text only (see PRD §4.4 Snapshot Format)
 - Don't roll back successfully moved files on partial failure — report the failure and let the user undo manually
 - Don't block the UI during file operations — all execution is async with a loading state
