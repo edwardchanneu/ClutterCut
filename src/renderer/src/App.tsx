@@ -1,14 +1,15 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginScreen from './screens/LoginScreen'
 import OrganizeScreen from './screens/OrganizeScreen'
+import SignUpScreen from './screens/SignUpScreen'
 
 function App(): React.JSX.Element {
   return (
-    <HashRouter>
+    <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>
         <Route path="/login" element={<LoginScreen />} />
+        <Route path="/signup" element={<SignUpScreen />} />
         <Route path="/organize" element={<OrganizeScreen />} />
-        {/* Placeholder for other routes, redirect root to login for now */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </HashRouter>
