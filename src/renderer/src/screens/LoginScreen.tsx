@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 export default function LoginScreen(): React.JSX.Element {
   const [email, setEmail] = useState('')
@@ -7,7 +8,7 @@ export default function LoginScreen(): React.JSX.Element {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  const handleLogin = (e: React.FormEvent): void => {
+  const handleLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
     setError('')
 
@@ -22,11 +23,23 @@ export default function LoginScreen(): React.JSX.Element {
       return
     }
 
-    // Mock validation
-    if (email === 'test@example.com' && password === 'password') {
-      navigate('/organize')
-    } else {
-      setError('Incorrect email or password')
+    try {
+      const { data, error: sbError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (sbError) {
+        setError(sbError.message)
+        return
+      }
+
+      if (data.session) {
+        localStorage.setItem('supabase-session', JSON.stringify(data.session))
+        navigate('/organize')
+      }
+    } catch {
+      setError('A network error occurred. Please try again later.')
     }
   }
 

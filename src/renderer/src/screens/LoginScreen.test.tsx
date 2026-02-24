@@ -1,7 +1,9 @@
-import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
+import { AuthError, Session, User } from '@supabase/supabase-js'
 import LoginScreen from './LoginScreen'
+import { supabase } from '../lib/supabase'
 
 const mockNavigate = vi.fn()
 vi.mock('react-router-dom', async () => {
@@ -12,7 +14,20 @@ vi.mock('react-router-dom', async () => {
   }
 })
 
+vi.mock('../lib/supabase', () => ({
+  supabase: {
+    auth: {
+      signInWithPassword: vi.fn()
+    }
+  }
+}))
+
 describe('LoginScreen', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    localStorage.clear()
+  })
+
   it('renders login screen with email field, password field, and Login button', () => {
     render(
       <MemoryRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -54,7 +69,12 @@ describe('LoginScreen', () => {
     expect(mockNavigate).not.toHaveBeenCalled()
   })
 
-  it('displays a clear inline error message for invalid credentials', () => {
+  it('displays a clear inline error message for invalid credentials', async () => {
+    vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
+      data: { user: null, session: null },
+      error: { message: 'Incorrect email or password' } as AuthError
+    })
+
     render(
       <MemoryRouter>
         <LoginScreen />
@@ -65,11 +85,17 @@ describe('LoginScreen', () => {
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'wrongpass' } })
     fireEvent.click(screen.getByRole('button', { name: /login/i }))
 
-    expect(screen.getByText(/incorrect email or password/i)).toBeInTheDocument()
+    expect(await screen.findByText(/incorrect email or password/i)).toBeInTheDocument()
     expect(mockNavigate).not.toHaveBeenCalled()
   })
 
-  it('authenticates valid credentials and navigates to the folder selection screen', () => {
+  it('authenticates valid credentials and navigates to the folder selection screen', async () => {
+    const mockSession = { access_token: '123' } as unknown as Session
+    vi.mocked(supabase.auth.signInWithPassword).mockResolvedValueOnce({
+      data: { user: {} as User, session: mockSession },
+      error: null
+    })
+
     render(
       <MemoryRouter>
         <LoginScreen />
@@ -80,8 +106,28 @@ describe('LoginScreen', () => {
     fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password' } })
     fireEvent.click(screen.getByRole('button', { name: /login/i }))
 
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/organize')
+    })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-    expect(mockNavigate).toHaveBeenCalledWith('/organize')
+    expect(localStorage.getItem('supabase-session')).toEqual(JSON.stringify(mockSession))
+  })
+
+  it('handles network errors gracefully', async () => {
+    vi.mocked(supabase.auth.signInWithPassword).mockRejectedValueOnce(new Error('Network error'))
+
+    render(
+      <MemoryRouter>
+        <LoginScreen />
+      </MemoryRouter>
+    )
+
+    fireEvent.change(screen.getByLabelText(/email/i), { target: { value: 'test@example.com' } })
+    fireEvent.change(screen.getByLabelText(/password/i), { target: { value: 'password' } })
+    fireEvent.click(screen.getByRole('button', { name: /login/i }))
+
+    expect(await screen.findByText(/A network error occurred/i)).toBeInTheDocument()
+    expect(mockNavigate).not.toHaveBeenCalled()
   })
 
   it('navigates to organize screen when "Continue as Guest" is clicked', () => {
