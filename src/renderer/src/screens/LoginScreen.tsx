@@ -7,7 +7,7 @@ export default function LoginScreen(): React.JSX.Element {
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent): void => {
     e.preventDefault()
     setError('')
 
@@ -30,7 +30,7 @@ export default function LoginScreen(): React.JSX.Element {
     }
   }
 
-  const handleGuest = () => {
+  const handleGuest = (): void => {
     navigate('/organize')
   }
 
