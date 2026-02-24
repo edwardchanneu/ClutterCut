@@ -1,25 +1,35 @@
 import { Navigate } from 'react-router-dom'
+import { useGuest } from '../context/GuestContext'
 import { useAuth } from '../hooks/useAuth'
 
 interface ProtectedRouteProps {
-  children: React.ReactNode
+    children: React.ReactNode
 }
 
 /**
- * Guards a route so only authenticated users can access it.
- * Renders nothing while the session is loading, redirects to /login
- * when there is no session, and renders children when authenticated.
+ * Blocks access to auth-required routes.
+ * Redirects to /login if:
+ *   - the user is in guest mode (isGuest = true), OR
+ *   - there is no authenticated Supabase session (after auth has loaded).
+ * Renders nothing while auth state is still loading.
  */
-export default function ProtectedRoute({
-  children
-}: ProtectedRouteProps): React.JSX.Element | null {
-  const { session, loading } = useAuth()
+export function ProtectedRoute({ children }: ProtectedRouteProps): React.JSX.Element | null {
+    const { isGuest } = useGuest()
+    const { session, loading } = useAuth()
 
-  if (loading) return null
+    if (isGuest) {
+        return <Navigate to="/login" replace />
+    }
 
-  if (!session) {
-    return <Navigate to="/login" replace />
-  }
+    if (loading) {
+        return null
+    }
 
-  return <>{children}</>
+    if (!session) {
+        return <Navigate to="/login" replace />
+    }
+
+    return <>{children}</>
 }
+
+export default ProtectedRoute

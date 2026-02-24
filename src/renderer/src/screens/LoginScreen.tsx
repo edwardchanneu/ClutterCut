@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { useGuest } from '../context/GuestContext'
 
 export default function LoginScreen(): React.JSX.Element {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const { setIsGuest } = useGuest()
 
   const handleLogin = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
@@ -36,6 +38,7 @@ export default function LoginScreen(): React.JSX.Element {
 
       if (data.session) {
         localStorage.setItem('supabase-session', JSON.stringify(data.session))
+        setIsGuest(false)
         navigate('/organize')
       }
     } catch {
@@ -44,6 +47,7 @@ export default function LoginScreen(): React.JSX.Element {
   }
 
   const handleGuest = (): void => {
+    setIsGuest(true)
     navigate('/organize')
   }
 
