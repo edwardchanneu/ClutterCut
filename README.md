@@ -40,3 +40,25 @@ $ npm run build:mac
 # For Linux
 $ npm run build:linux
 ```
+
+## 🚀 Releases & Installation
+
+ClutterCut is automatically packaged and published using GitHub Actions.
+
+### For Users: Installing the Application
+
+**Windows:**
+1. Go to the [Releases page](../../releases) and download the latest `.exe` installer.
+2. Double click the `.exe` file to install.
+
+**macOS:**
+Because this app is open-source and not notarized via a paid Apple Developer account, macOS Gatekeeper will show an "App is damaged" error by default. Follow these steps to install:
+1. Download the `.dmg` from the [Releases page](../../releases) and open it.
+2. Drag `ClutterCut.app` into your **Applications** folder.
+3. Open your **Terminal** (CMD + Space, type "Terminal").
+4. Run the following command to remove the Apple quarantine flag:
+   ```bash
+   xattr -cr /Applications/ClutterCut.app
+   ```
+5. You can now launch ClutterCut normally from your Applications folder!
+
