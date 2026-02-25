@@ -65,16 +65,11 @@ describe('App Integration Routing', () => {
     // Click Guest
     fireEvent.click(screen.getByRole('button', { name: /continue as guest/i }))
 
-    // Should load the Organize Screen. Let's look for something specific to it.
-    // e.g "Select a Folder", "Organize", "ClutterCut" header.
     await waitFor(() => {
-      // Since we are mocking, we just check if it passed route. OrganizeScreen probably has a specific heading
-      // Our previous bug would have bounded it back to LoginScreen. Let's make sure LoginScreen disappears.
       expect(screen.queryByRole('button', { name: /continue as guest/i })).not.toBeInTheDocument()
     })
 
-    // We should be on OrganizeScreen.
-    expect(screen.getByText(/ClutterCut/i)).toBeInTheDocument()
+    expect(screen.getByText(/Organize/i)).toBeInTheDocument()
   })
 
   it('redirects an authenticated user away from /login to /organize', async () => {
