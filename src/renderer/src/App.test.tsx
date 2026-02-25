@@ -92,7 +92,7 @@ describe('App Integration Routing', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(/ClutterCut/i)).toBeInTheDocument()
+      expect(screen.getByText(/Organize/i)).toBeInTheDocument()
     })
     // It shouldn't show login
     expect(screen.queryByLabelText(/email/i)).not.toBeInTheDocument()
@@ -117,7 +117,7 @@ describe('App Integration Routing', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(/ClutterCut/i)).toBeInTheDocument()
+      expect(screen.getByText(/Organize/i)).toBeInTheDocument()
     })
   })
 
@@ -163,7 +163,7 @@ describe('App Integration Routing', () => {
     )
 
     await waitFor(() => {
-      expect(screen.getByText(/ClutterCut/i)).toBeInTheDocument()
+      expect(screen.getByText(/Organize/i)).toBeInTheDocument()
     })
     // It shouldn't show signup
     expect(screen.queryByLabelText(/create account/i)).not.toBeInTheDocument()
