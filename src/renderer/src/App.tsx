@@ -7,7 +7,7 @@ import OrganizeScreen from './screens/OrganizeScreen'
 import SignUpScreen from './screens/SignUpScreen'
 import { useAuth } from './hooks/useAuth'
 
-function AppRoutes(): React.JSX.Element {
+export function AppRoutes(): React.JSX.Element {
   const { session, loading } = useAuth()
 
   if (loading) {
@@ -31,14 +31,7 @@ function AppRoutes(): React.JSX.Element {
         path="/signup"
         element={session ? <Navigate to="/organize" replace /> : <SignUpScreen />}
       />
-      <Route
-        path="/organize"
-        element={
-          <ProtectedRoute>
-            <OrganizeScreen />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/organize" element={<OrganizeScreen />} />
       <Route
         path="/history"
         element={
