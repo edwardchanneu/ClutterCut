@@ -37,8 +37,6 @@ export default function LoginScreen(): React.JSX.Element {
       }
 
       if (data.session) {
-        localStorage.setItem('supabase-session', JSON.stringify(data.session))
-        setIsGuest(false)
         navigate('/organize')
       }
     } catch {
