@@ -71,14 +71,14 @@ function FilePanel({ files, activeExtensions }: FilePanelProps): React.JSX.Eleme
         <p className="text-sm font-semibold text-primary">Folder Contents</p>
         <p className="text-xs text-muted mt-0.5">{fileEntries.length} file(s)</p>
       </div>
-      <ul className="flex-1 overflow-y-auto divide-y divide-gray-50 p-2">
+      <ul className="flex-1 overflow-auto divide-y divide-gray-50 p-2">
         {dirEntries.map((entry) => (
           <li
             key={entry.name}
             className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-muted font-mono"
           >
             <span aria-hidden="true">📁</span>
-            <span className="truncate">{entry.name}</span>
+            <span className="whitespace-nowrap">{entry.name}</span>
           </li>
         ))}
         {fileEntries.map((entry) => {
@@ -91,7 +91,7 @@ function FilePanel({ files, activeExtensions }: FilePanelProps): React.JSX.Eleme
                 }`}
             >
               <span aria-hidden="true">📄</span>
-              <span className="truncate" title={entry.name}>
+              <span className="whitespace-nowrap" title={entry.name}>
                 {entry.name}
               </span>
               {isHighlighted && (
@@ -187,7 +187,12 @@ export function RulesScreen(): React.JSX.Element {
 
       {/* Split layout */}
       <div className="flex flex-1 gap-4 p-6 overflow-hidden">
-        {/* ---- Left: Rules panel ---- */}
+        {/* ---- Left: File reference panel ---- */}
+        <div className="w-64 shrink-0 flex flex-col overflow-hidden">
+          <FilePanel files={files} activeExtensions={activeExtensions} />
+        </div>
+
+        {/* ---- Right: Rules panel ---- */}
         <main className="flex flex-col flex-1 min-w-0 overflow-y-auto">
           <div className="bg-white rounded-xl shadow-sm p-6 flex flex-col gap-4">
             <div>
@@ -371,11 +376,6 @@ export function RulesScreen(): React.JSX.Element {
             </button>
           </div>
         </main>
-
-        {/* ---- Right: File reference panel ---- */}
-        <div className="w-64 shrink-0 flex flex-col overflow-hidden">
-          <FilePanel files={files} activeExtensions={activeExtensions} />
-        </div>
       </div>
     </div>
   )
