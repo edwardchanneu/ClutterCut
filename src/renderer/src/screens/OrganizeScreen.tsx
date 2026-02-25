@@ -129,7 +129,7 @@ export default function OrganizeScreen(): React.JSX.Element {
             aria-disabled={!hasEntries}
             className="w-full py-3 rounded-lg bg-[#0A0A0A] text-white text-sm font-semibold transition-opacity disabled:opacity-40 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
             onClick={() => {
-              // Navigation to rule configuration will be wired in the next issue
+              navigate('/organize/rules', { state: { folderPath, files } })
             }}
           >
             Start Organizing

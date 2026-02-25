@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
 import LoginScreen from './screens/LoginScreen'
 import OrganizeScreen from './screens/OrganizeScreen'
 import SignUpScreen from './screens/SignUpScreen'
+import { RulesScreen } from './screens/RulesScreen'
 import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
 
@@ -34,6 +35,14 @@ function AppRoutes(): React.JSX.Element {
         element={
           <ProtectedRoute>
             <OrganizeScreen />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/organize/rules"
+        element={
+          <ProtectedRoute>
+            <RulesScreen />
           </ProtectedRoute>
         }
       />
