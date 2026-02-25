@@ -45,16 +45,6 @@ $ npm run build:linux
 
 ClutterCut is automatically packaged and published using GitHub Actions.
 
-### For Developers: Triggering a Release
-We generate a new release at the end of every sprint. To trigger the automated build and publish pipeline:
-1. Ensure your code is merged into the `main` branch.
-2. Create and push a new version tag starting with `v` (e.g., `v1.1.0`):
-   ```bash
-   git tag v1.1.0
-   git push origin v1.1.0
-   ```
-3. GitHub Actions will automatically draft a release, generate notes, and attach the `.exe` and `.dmg` installers!
-
 ### For Users: Installing the Application
 
 **Windows:**
