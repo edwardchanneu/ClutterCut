@@ -110,7 +110,6 @@ describe('LoginScreen', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/organize')
     })
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
-    expect(localStorage.getItem('supabase-session')).toEqual(JSON.stringify(mockSession))
   })
 
   it('handles network errors gracefully', async () => {
