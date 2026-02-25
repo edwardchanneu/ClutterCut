@@ -6,8 +6,6 @@ import { supabase } from './supabase'
  * Returns the Supabase AuthError if one occurred, otherwise null.
  */
 export async function signOut(): Promise<AuthError | null> {
-  console.log('[auth] signOut called')
   const { error } = await supabase.auth.signOut()
-  console.log('[auth] signOut result:', error ?? 'success ✓')
   return error ?? null
 }

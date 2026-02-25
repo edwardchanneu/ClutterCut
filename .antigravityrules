@@ -196,7 +196,7 @@ Types: `feature`, `fix`, `chore`, `test`, `docs`, `refactor`, `style`, `ci`
 - **No file content is ever removed.**
 - **No file data is sent to Supabase** — only metadata (paths, names, rule config, plain-text snapshot trees).
 - **Supabase RLS must be enabled** on `organization_runs`. Policy: `user_id = auth.uid()` for all operations.
-- **Session tokens** are stored in Electron's encrypted store (`electron-store` with encryption key derived from machine ID), never in plain `localStorage`.
+- **Session tokens** are stored in the renderer's `localStorage`.
 - **IPC handlers must validate all inputs** from the renderer before performing any file operation. Treat renderer input as untrusted.
 - **Context isolation ON, Node integration OFF** in renderer `BrowserWindow` config. All Node access via the preload script's `contextBridge`.
 - Destination folder name inputs must be sanitized to reject OS-illegal characters before any file operation.

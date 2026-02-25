@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { signOut } from '../lib/auth'
 import { useGuest } from '../context/GuestContext'
 
-export function HistoryScreen(): React.JSX.Element {
+export default function HistoryScreen(): React.JSX.Element {
   const navigate = useNavigate()
   const { isGuest } = useGuest()
   const [signingOut, setSigningOut] = useState(false)
