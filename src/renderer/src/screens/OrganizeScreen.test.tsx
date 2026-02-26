@@ -75,7 +75,7 @@ describe('OrganizeScreen', () => {
       expect(
         screen.getByRole('heading', { name: /Select Folder to Organize/i })
       ).toBeInTheDocument()
-      expect(screen.getByRole('button', { name: /Sign out of ClutterCut/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /Sign Out/i })).toBeInTheDocument()
     })
 
     it('displays initial empty state (no folder selected, browse button)', () => {
@@ -211,7 +211,7 @@ describe('OrganizeScreen', () => {
     it('calls signOut on Sign Out click & navigates to /login on success', async () => {
       renderOrganizeScreen()
 
-      const signOutBtn = screen.getByRole('button', { name: /Sign out of ClutterCut/i })
+      const signOutBtn = screen.getByRole('button', { name: /Sign Out/i })
       fireEvent.click(signOutBtn)
 
       // Button goes into loading state
@@ -230,14 +230,14 @@ describe('OrganizeScreen', () => {
       mockSignOut.mockResolvedValue(new Error('Network error'))
       renderOrganizeScreen()
 
-      fireEvent.click(screen.getByRole('button', { name: /Sign out of ClutterCut/i }))
+      fireEvent.click(screen.getByRole('button', { name: /Sign Out/i }))
 
       await waitFor(() => {
         expect(screen.getByRole('alert')).toHaveTextContent('Sign out failed. Please try again.')
       })
 
       // Button is re-enabled
-      const signOutBtn = screen.getByRole('button', { name: /Sign out of ClutterCut/i })
+      const signOutBtn = screen.getByRole('button', { name: /Sign Out/i })
       expect(signOutBtn).not.toBeDisabled()
       expect(signOutBtn).toHaveTextContent('Sign Out')
     })
