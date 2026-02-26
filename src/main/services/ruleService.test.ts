@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchesExtension } from './ruleService'
+import { matchesExtension, matchesNameContains } from './ruleService'
 
 describe('ruleService', () => {
   describe('matchesExtension', () => {
@@ -57,6 +57,56 @@ describe('ruleService', () => {
 
     it('returns false when the extension value is just a dot', () => {
       expect(matchesExtension('report.pdf', '.')).toBe(false)
+    })
+  })
+
+  describe('matchesNameContains', () => {
+    // -----------------------------------------------------------------
+    // Positive matches — case-insensitive
+    // -----------------------------------------------------------------
+
+    it('matches when filename and substring are both lowercase', () => {
+      expect(matchesNameContains('invoice-2023.pdf', 'invoice')).toBe(true)
+    })
+
+    it('matches when filename is uppercase and substring is lowercase', () => {
+      expect(matchesNameContains('INVOICE-2023.PDF', 'invoice')).toBe(true)
+    })
+
+    it('matches when filename is mixed case and substring is lowercase', () => {
+      expect(matchesNameContains('Invoice-2023.pdf', 'invoice')).toBe(true)
+    })
+
+    it('matches when substring is uppercase and filename is lowercase', () => {
+      expect(matchesNameContains('invoice-2023.pdf', 'INVOICE')).toBe(true)
+    })
+
+    it('matches when substring spans the name and extension', () => {
+      expect(matchesNameContains('report.pdf', 't.pd')).toBe(true)
+    })
+
+    it('matches when substring matches the extension exactly', () => {
+      expect(matchesNameContains('photo.jpg', 'jpg')).toBe(true)
+    })
+
+    // -----------------------------------------------------------------
+    // Non-matches
+    // -----------------------------------------------------------------
+
+    it('does not match a filename that does not contain the substring', () => {
+      expect(matchesNameContains('notes.docx', 'invoice')).toBe(false)
+    })
+
+    // -----------------------------------------------------------------
+    // Empty / whitespace value — validation guard
+    // -----------------------------------------------------------------
+
+    it('returns false when the substring is an empty string', () => {
+      expect(matchesNameContains('report.pdf', '')).toBe(false)
+    })
+
+    it('returns false when the substring is whitespace only', () => {
+      expect(matchesNameContains('report.pdf', '   ')).toBe(false)
     })
   })
 })

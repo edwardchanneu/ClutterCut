@@ -21,3 +21,23 @@ export function matchesExtension(fileName: string, ext: string): boolean {
   const fileExt = path.extname(fileName).slice(1).toLowerCase()
   return fileExt === normalised
 }
+
+/**
+ * Determines whether a file's name contains the given substring.
+ *
+ * Matching is case-insensitive and checks against the entire file name,
+ * including its extension. An empty or whitespace-only `substring` never matches.
+ *
+ * @param fileName - The full file name, e.g. "Report.PDF"
+ * @param substring - The value to look for, e.g. "report"
+ * @returns true if `fileName` contains `substring` case-insensitively.
+ */
+export function matchesNameContains(fileName: string, substring: string): boolean {
+  const normalisedSubstring = substring.trim().toLowerCase()
+
+  if (normalisedSubstring === '') {
+    return false
+  }
+
+  return fileName.toLowerCase().includes(normalisedSubstring)
+}

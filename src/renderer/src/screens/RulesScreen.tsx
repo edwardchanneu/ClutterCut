@@ -66,6 +66,8 @@ function computeFileMatch(fileName: string, rows: RuleRow[]): FileMatch | null {
 
     if (row.conditionType === 'file_extension') {
       if (extOf(fileName) === val) return { ruleIndex: i, destination: dest }
+    } else if (row.conditionType === 'name_contains') {
+      if (fileName.toLowerCase().includes(val)) return { ruleIndex: i, destination: dest }
     }
   }
   return null
@@ -219,21 +221,36 @@ export function RulesScreen(): React.JSX.Element {
   const allValid = rows.every((r) => getRowError(r) === null)
   const hasAnyInput = rows.some((r) => r.conditionValue !== '' || r.destinationFolder !== '')
 
+  const fileEntries = files.filter((f) => f.isFile)
+  const matchCounts = new Array(rows.length).fill(0)
+  fileEntries.forEach((entry) => {
+    const match = computeFileMatch(entry.name, rows)
+    if (match) {
+      matchCounts[match.ruleIndex]++
+    }
+  })
+
   // -------------------------------------------------------------------------
   // Row handlers
   // -------------------------------------------------------------------------
 
   const addRow = useCallback((): void => {
     setRows((prev) => [...prev, makeEmptyRow()])
-  }, [])
+  }, [setRows])
 
-  const deleteRow = useCallback((id: string): void => {
-    setRows((prev) => (prev.length > 1 ? prev.filter((r) => r.id !== id) : prev))
-  }, [])
+  const deleteRow = useCallback(
+    (id: string): void => {
+      setRows((prev) => (prev.length > 1 ? prev.filter((r) => r.id !== id) : prev))
+    },
+    [setRows]
+  )
 
-  const updateRow = useCallback((id: string, patch: Partial<Omit<RuleRow, 'id'>>): void => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
-  }, [])
+  const updateRow = useCallback(
+    (id: string, patch: Partial<Omit<RuleRow, 'id'>>): void => {
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)))
+    },
+    [setRows]
+  )
 
   // -------------------------------------------------------------------------
   // Navigation
@@ -296,6 +313,9 @@ export function RulesScreen(): React.JSX.Element {
                   rowError !== null && (row.conditionValue !== '' || row.destinationFolder !== '')
                 const colour = ruleColour(index)
 
+                const isComplete = rowError === null
+                const showNoMatchWarning = isComplete && matchCounts[index] === 0
+
                 return (
                   <li
                     key={row.id}
@@ -329,6 +349,7 @@ export function RulesScreen(): React.JSX.Element {
                             className="w-full appearance-none rounded-lg border border-gray-300 bg-white pl-3 pr-8 py-2 text-sm text-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                           >
                             <option value="file_extension">File Extension</option>
+                            <option value="name_contains">Name Contains</option>
                           </select>
                           <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-muted">
                             <svg
@@ -383,14 +404,23 @@ export function RulesScreen(): React.JSX.Element {
                           htmlFor={`condition-value-${row.id}`}
                           className="block text-xs font-medium text-muted mb-1"
                         >
-                          Extension <span className="font-normal">(e.g. pdf, jpg)</span>
+                          {row.conditionType === 'file_extension' ? (
+                            <>
+                              Extension <span className="font-normal">(e.g. pdf, jpg)</span>
+                            </>
+                          ) : (
+                            <>
+                              Contains Text{' '}
+                              <span className="font-normal">(e.g. invoice, 2023)</span>
+                            </>
+                          )}
                         </label>
                         <input
                           id={`condition-value-${row.id}`}
                           type="text"
                           value={row.conditionValue}
                           onChange={(e) => updateRow(row.id, { conditionValue: e.target.value })}
-                          placeholder="pdf"
+                          placeholder={row.conditionType === 'file_extension' ? 'pdf' : 'invoice'}
                           aria-describedby={showError ? `row-error-${row.id}` : undefined}
                           className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-primary placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                         />
@@ -423,6 +453,33 @@ export function RulesScreen(): React.JSX.Element {
                         className="pl-10 text-xs text-red-500"
                       >
                         {rowError}
+                      </p>
+                    )}
+
+                    {/* No match warning */}
+                    {!showError && showNoMatchWarning && (
+                      <p
+                        id={`row-warning-${row.id}`}
+                        role="status"
+                        className="pl-10 text-xs text-amber-600 flex items-center gap-1.5"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                          <line x1="12" y1="9" x2="12" y2="13" />
+                          <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        This rule does not match any files in this folder.
                       </p>
                     )}
                   </li>
