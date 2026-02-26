@@ -10,6 +10,7 @@ export default defineConfig({
     setupFiles: ['./src/renderer/src/test-setup.ts'],
     alias: {
       '@renderer': resolve(__dirname, 'src/renderer/src')
-    }
+    },
+    exclude: ['e2e/**', 'node_modules/**']
   }
 })
