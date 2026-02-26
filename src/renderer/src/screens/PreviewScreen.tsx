@@ -77,7 +77,7 @@ export default function PreviewScreen(): React.JSX.Element {
 
   return (
     <div className="flex flex-col h-screen bg-[#F8FAFB]">
-      <header className="flex justify-between items-center px-6 py-3 bg-white border-b border-gray-100 shadow-sm shrink-0">
+      <header className="flex items-center px-6 py-3 bg-white border-b border-gray-100 shadow-sm shrink-0">
         <button
           onClick={handleBackToRules}
           aria-label="Back to rule configuration"
@@ -85,13 +85,6 @@ export default function PreviewScreen(): React.JSX.Element {
         >
           <span aria-hidden="true">←</span>
           Back to Rules
-        </button>
-        <button
-          onClick={handleCancel}
-          aria-label="Cancel operation"
-          className="text-sm font-medium text-red-500 hover:text-red-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded px-2 py-1 transition-colors"
-        >
-          Cancel
         </button>
       </header>
 
@@ -332,6 +325,36 @@ export default function PreviewScreen(): React.JSX.Element {
                 </div>
               )}
             </div>
+          </div>
+        </div>
+        <div className="mt-6 flex gap-6 shrink-0 max-w-6xl mx-auto w-full">
+          <div className="flex-1 flex flex-col">
+            <button
+              type="button"
+              onClick={handleCancel}
+              aria-label="Cancel operation"
+              className="w-full px-5 py-3 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:border-gray-400 hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-gray-400 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+
+          {/* Middle Gutter Spacer */}
+          <div className="hidden md:block w-8 shrink-0"></div>
+
+          <div className="flex-1 flex flex-col">
+            <button
+              type="button"
+              onClick={() => {
+                // TODO: will be implemented in a future issue
+                console.log('Approve & Organize') // TODO: remove this console log
+              }}
+              disabled={movedCount === 0}
+              aria-label="Approve and organize files"
+              className="w-full px-5 py-3 rounded-xl bg-[#0A0A0A] text-white text-sm font-semibold transition-opacity disabled:opacity-40 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
+            >
+              Approve & Organize
+            </button>
           </div>
         </div>
       </main>
