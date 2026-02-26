@@ -6,7 +6,6 @@ import LoginScreen from './screens/LoginScreen'
 import OrganizeScreen from './screens/OrganizeScreen'
 import SignUpScreen from './screens/SignUpScreen'
 import { RulesScreen } from './screens/RulesScreen'
-import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
 
 export function AppRoutes(): React.JSX.Element {
