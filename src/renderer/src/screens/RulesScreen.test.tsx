@@ -146,19 +146,21 @@ describe('RulesScreen', () => {
       expect(screen.getByRole('alert')).toHaveTextContent(/Destination folder must not be empty/i)
     })
 
-    it('shows validation error for illegal characters in destination', () => {
-      renderRulesScreen()
+    it.each([['\\'], ['/'], [':'], ['*'], ['?'], ['"'], ['<'], ['>'], ['|']])(
+      'shows validation error for illegal character "%s" in destination',
+      (char) => {
+        renderRulesScreen()
 
-      const conditionInput = screen.getByRole('textbox', { name: /Extension/i })
-      const destInput = screen.getByRole('textbox', { name: /Move to Folder/i })
+        const conditionInput = screen.getByRole('textbox', { name: /Extension/i })
+        const destInput = screen.getByRole('textbox', { name: /Move to Folder/i })
+        fireEvent.change(conditionInput, { target: { value: 'pdf' } })
+        fireEvent.change(destInput, { target: { value: `Bad${char}Name` } })
 
-      fireEvent.change(conditionInput, { target: { value: 'pdf' } })
-      fireEvent.change(destInput, { target: { value: 'Bad:Name' } }) // Contains illegal colon
-
-      expect(screen.getByRole('alert')).toHaveTextContent(
-        /Destination folder contains illegal characters/i
-      )
-    })
+        expect(screen.getByRole('alert')).toHaveTextContent(
+          /Destination folder contains illegal characters/i
+        )
+      }
+    )
   })
 
   describe('File Panel Matching', () => {
