@@ -84,7 +84,7 @@ describe('PreviewScreen Layout Update', () => {
 
       const leftCol = screen.getByLabelText(/Previous Directory Contents/i)
       const leftColScope = within(leftCol)
-      expect(screen.getByText('2 folders, 4 files')).toBeInTheDocument()
+      expect(screen.getByText('2 folders · 4 files')).toBeInTheDocument()
 
       // It should contain all original files and folders
       expect(leftColScope.getByText('report.pdf')).toBeInTheDocument()
@@ -102,23 +102,24 @@ describe('PreviewScreen Layout Update', () => {
 
       const rightPanel = screen.getByLabelText(/New Directory Contents/i)
       const rightScope = within(rightPanel)
+      expect(screen.getByText('3 folders · 4 files')).toBeInTheDocument()
 
       // Existing Directory Check: Documents
       expect(rightScope.getByText('Documents')).toBeInTheDocument()
       expect(rightScope.getByText('(Existing)')).toBeInTheDocument()
-      expect(rightScope.getByText('1 folder, 2 files')).toBeInTheDocument()
+      expect(rightScope.getByText('1 folder · 2 files')).toBeInTheDocument()
       expect(rightScope.getByText('report.pdf')).toBeInTheDocument()
       expect(rightScope.getByText('invoice-2023.pdf')).toBeInTheDocument()
 
       // New Directory Check: Images
       expect(rightScope.getByText('Images')).toBeInTheDocument()
       expect(rightScope.getByText('(New)')).toBeInTheDocument()
-      expect(rightScope.getByText('1 file')).toBeInTheDocument()
+      expect(rightScope.getAllByText('1 folder · 1 file')).toHaveLength(2)
       expect(rightScope.getByText('photo.jpg')).toBeInTheDocument()
 
       // Unchanged Check: SubFolder and notes.txt
       expect(rightScope.getByText('Unchanged')).toBeInTheDocument()
-      expect(rightScope.getByText('1 folder, 1 file')).toBeInTheDocument()
+      expect(rightScope.getAllByText('1 folder · 1 file')).toHaveLength(2)
       expect(rightScope.getByText('SubFolder')).toBeInTheDocument()
       expect(rightScope.getByText('notes.txt')).toBeInTheDocument()
     })
@@ -129,7 +130,7 @@ describe('PreviewScreen Layout Update', () => {
 
       const leftCol = screen.getByLabelText(/Previous Directory Contents/i)
       const leftColScope = within(leftCol)
-      expect(screen.getAllByText('0 folders, 1 file')).toHaveLength(2)
+      expect(screen.getAllByText('0 folders · 1 file')).toHaveLength(3)
       expect(leftColScope.getByText('notes.txt')).toBeInTheDocument()
 
       const rightPanel = screen.getByLabelText(/New Directory Contents/i)
@@ -140,7 +141,7 @@ describe('PreviewScreen Layout Update', () => {
       expect(rightScope.queryByText('Images')).not.toBeInTheDocument()
 
       expect(rightScope.getByText('Unchanged')).toBeInTheDocument()
-      expect(rightScope.getByText('0 folders, 1 file')).toBeInTheDocument()
+      expect(rightScope.getByText('0 folders · 1 file')).toBeInTheDocument()
       expect(rightScope.getByText('notes.txt')).toBeInTheDocument()
     })
   })

@@ -100,11 +100,11 @@ export default function PreviewScreen(): React.JSX.Element {
         <div className="flex-1 flex gap-6 overflow-hidden max-w-6xl mx-auto w-full">
           {/* Left Column: Original Folder */}
           <div className="flex-1 flex flex-col bg-gray-100 rounded-xl border border-gray-200 overflow-hidden relative shadow-inner">
-            <div className="px-4 py-3 bg-gray-200/50 border-b border-gray-200 shrink-0 flex items-center justify-between">
+            <div className="px-4 py-3 bg-gray-200/50 border-b border-gray-200 shrink-0">
               <h2 className="text-sm font-semibold text-primary">Previous Directory</h2>
-              <span className="text-xs font-medium text-muted bg-white px-2 py-0.5 rounded-full border border-gray-200 text-right">
-                {`${pluralize(originalDirsCount, 'folder')}, ${pluralize(originalFilesCount, 'file')}`}
-              </span>
+              <p className="text-xs text-muted mt-0.5">
+                {`${pluralize(originalDirsCount, 'folder')} · ${pluralize(originalFilesCount, 'file')}`}
+              </p>
             </div>
             <ul
               aria-label="Previous Directory Contents"
@@ -179,6 +179,9 @@ export default function PreviewScreen(): React.JSX.Element {
           <div className="flex-1 flex flex-col bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="px-4 py-3 bg-white border-b border-gray-200 shrink-0">
               <h2 className="text-sm font-semibold text-primary">New Directory</h2>
+              <p className="text-xs text-muted mt-0.5">
+                {`${pluralize(originalDirsCount + newDirs.length, 'folder')} · ${pluralize(originalFilesCount, 'file')}`}
+              </p>
             </div>
             <div
               aria-label="New Directory Contents"
@@ -198,7 +201,7 @@ export default function PreviewScreen(): React.JSX.Element {
                     className="bg-white rounded-lg shadow-sm overflow-hidden border"
                   >
                     <div
-                      className="px-3 py-2 border-b flex items-center justify-between"
+                      className="px-3 py-2 border-b"
                       style={{ backgroundColor: headerBg, borderColor }}
                     >
                       <h3
@@ -209,12 +212,12 @@ export default function PreviewScreen(): React.JSX.Element {
                         {dest}
                         <span className="text-xs font-normal ml-1 opacity-70">(Existing)</span>
                       </h3>
-                      <span
-                        className="text-xs font-medium px-2 py-0.5 rounded-full border bg-white"
-                        style={{ color: colour.pillStyle.color, borderColor }}
+                      <p
+                        className="text-xs mt-0.5 ml-6 opacity-80"
+                        style={{ color: colour.pillStyle.color }}
                       >
-                        {`1 folder, ${pluralize(matchedFilesForDest.length, 'file')}`}
-                      </span>
+                        {`1 folder · ${pluralize(matchedFilesForDest.length, 'file')}`}
+                      </p>
                     </div>
                     <ul className="divide-y divide-gray-50 max-h-48 overflow-y-auto">
                       {matchedFilesForDest.map((file) => {
@@ -249,7 +252,7 @@ export default function PreviewScreen(): React.JSX.Element {
                     className="bg-white rounded-lg shadow-sm overflow-hidden border"
                   >
                     <div
-                      className="px-3 py-2 border-b flex items-center justify-between"
+                      className="px-3 py-2 border-b"
                       style={{ backgroundColor: headerBg, borderColor }}
                     >
                       <h3
@@ -260,12 +263,12 @@ export default function PreviewScreen(): React.JSX.Element {
                         {dest}
                         <span className="text-xs font-normal ml-1 opacity-80">(New)</span>
                       </h3>
-                      <span
-                        className="text-xs font-medium bg-white px-2 py-0.5 rounded-full border"
-                        style={{ color: colour.pillStyle.color, borderColor }}
+                      <p
+                        className="text-xs mt-0.5 ml-6 opacity-80"
+                        style={{ color: colour.pillStyle.color }}
                       >
-                        {pluralize(matchedFilesForDest.length, 'file')}
-                      </span>
+                        {`1 folder · ${pluralize(matchedFilesForDest.length, 'file')}`}
+                      </p>
                     </div>
                     <ul className="divide-y divide-gray-50 max-h-48 overflow-y-auto">
                       {matchedFilesForDest.map((file) => {
@@ -289,14 +292,14 @@ export default function PreviewScreen(): React.JSX.Element {
               {/* Unchanged Directories and Files */}
               {(unchangedDirs.length > 0 || unmatchedFiles.length > 0) && (
                 <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                  <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
+                  <div className="px-3 py-2 bg-gray-50 border-b border-gray-100">
                     <h3 className="text-sm font-semibold text-muted flex items-center gap-2">
                       <span aria-hidden="true">⚪</span>
                       Unchanged
                     </h3>
-                    <span className="text-xs font-medium text-muted bg-white px-2 py-0.5 rounded-full border border-gray-200">
-                      {`${pluralize(unchangedDirs.length, 'folder')}, ${pluralize(unmatchedFiles.length, 'file')}`}
-                    </span>
+                    <p className="text-xs text-muted mt-0.5 ml-6">
+                      {`${pluralize(unchangedDirs.length, 'folder')} · ${pluralize(unmatchedFiles.length, 'file')}`}
+                    </p>
                   </div>
                   <ul className="divide-y divide-gray-50 max-h-64 overflow-y-auto">
                     {unchangedDirs.map((dir) => (
