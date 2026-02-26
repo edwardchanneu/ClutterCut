@@ -22,15 +22,10 @@ interface LocationState {
 const ILLEGAL_FOLDER_CHARS = /[\\/:*?"<>|]/
 
 function getRowError(row: RuleRow): string | null {
-  if (row.conditionValue.trim() === '') {
-    return 'Condition value must not be empty.'
-  }
-  if (row.destinationFolder.trim() === '') {
-    return 'Destination folder must not be empty.'
-  }
-  if (ILLEGAL_FOLDER_CHARS.test(row.destinationFolder)) {
+  if (row.conditionValue.trim() === '') return 'Condition value must not be empty.'
+  if (row.destinationFolder.trim() === '') return 'Destination folder must not be empty.'
+  if (ILLEGAL_FOLDER_CHARS.test(row.destinationFolder))
     return 'Destination folder contains illegal characters.'
-  }
   return null
 }
 
@@ -43,67 +38,159 @@ function makeEmptyRow(): RuleRow {
   }
 }
 
-/** Returns just the extension portion (without dot), lower-cased, or '' */
+// ---------------------------------------------------------------------------
+// Rule matching (renderer-side, pure — mirrors ruleService.ts logic)
+// ---------------------------------------------------------------------------
+
+/** Returns extension portion (without dot), lower-cased, or '' */
 function extOf(name: string): string {
   const dot = name.lastIndexOf('.')
   return dot > 0 ? name.slice(dot + 1).toLowerCase() : ''
 }
 
+interface FileMatch {
+  ruleIndex: number
+  destination: string
+}
+
+/**
+ * Evaluates rules top-to-bottom and returns the first match for a filename,
+ * or null if no rule applies. Only considers rows that are fully filled in.
+ */
+function computeFileMatch(fileName: string, rows: RuleRow[]): FileMatch | null {
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i]
+    const val = row.conditionValue.trim().replace(/^\./, '').toLowerCase()
+    const dest = row.destinationFolder.trim()
+    if (!val || !dest) continue // skip incomplete rows
+
+    if (row.conditionType === 'file_extension') {
+      if (extOf(fileName) === val) return { ruleIndex: i, destination: dest }
+    }
+  }
+  return null
+}
+
 // ---------------------------------------------------------------------------
-// Sub-components
+// Colour palette — one per rule (cycles every 5)
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Colour generator — golden angle on HSL wheel, unlimited unique colours
+// ---------------------------------------------------------------------------
+
+/**
+ * Distributes rule colours using the golden angle (~137.5°) so consecutive
+ * rules are as perceptually far apart as possible, with no hard limit.
+ */
+function ruleColour(index: number): {
+  badgeStyle: React.CSSProperties
+  pillStyle: React.CSSProperties
+  ringStyle: React.CSSProperties
+} {
+  const hue = Math.round((index * 137.508) % 360)
+  return {
+    // Badge: vivid, white text
+    badgeStyle: { background: `hsl(${hue}, 60%, 42%)` },
+    // Pill background + text
+    pillStyle: {
+      background: `hsl(${hue}, 80%, 96%)`,
+      color: `hsl(${hue}, 55%, 32%)`
+    },
+    // Subtle ring border
+    ringStyle: { boxShadow: `0 0 0 1px hsl(${hue}, 55%, 78%) inset` }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// FilePanel sub-component
 // ---------------------------------------------------------------------------
 
 interface FilePanelProps {
   files: ReadFolderEntry[]
-  activeExtensions: string[]
+  rows: RuleRow[]
 }
 
-function FilePanel({ files, activeExtensions }: FilePanelProps): React.JSX.Element {
+function FilePanel({ files, rows }: FilePanelProps): React.JSX.Element {
   const fileEntries = files.filter((f) => f.isFile)
   const dirEntries = files.filter((f) => !f.isFile)
+
+  const movedCount = fileEntries.filter((f) => computeFileMatch(f.name, rows) !== null).length
 
   return (
     <aside
       aria-label="Files in selected folder"
-      className="flex flex-col bg-white rounded-xl shadow-sm overflow-hidden min-w-0"
+      className="flex flex-col bg-white rounded-xl shadow-sm overflow-hidden h-full"
     >
-      <div className="px-4 py-3 border-b border-gray-100">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-gray-100 shrink-0">
         <p className="text-sm font-semibold text-primary">Folder Contents</p>
-        <p className="text-xs text-muted mt-0.5">{fileEntries.length} file(s)</p>
+        <p className="text-xs text-muted mt-0.5">
+          {fileEntries.length} file(s)
+          {movedCount > 0 && (
+            <span className="ml-1 text-teal-600 font-medium">· {movedCount} will move</span>
+          )}
+        </p>
       </div>
-      <ul className="flex-1 overflow-auto divide-y divide-gray-50 p-2">
+
+      {/* File list */}
+      <ul className="flex-1 overflow-auto divide-y divide-gray-50 py-1">
+        {/* Subdirectories (always shown, no rules apply) */}
         {dirEntries.map((entry) => (
           <li
             key={entry.name}
-            className="flex items-center gap-2 px-2 py-1.5 rounded text-xs text-muted font-mono"
+            className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted font-mono"
           >
-            <span aria-hidden="true">📁</span>
+            <span aria-hidden="true" className="shrink-0">
+              📁
+            </span>
             <span className="whitespace-nowrap">{entry.name}</span>
           </li>
         ))}
+
+        {/* Files — show live match result */}
         {fileEntries.map((entry) => {
-          const ext = extOf(entry.name)
-          const isHighlighted = activeExtensions.includes(ext)
+          const match = computeFileMatch(entry.name, rows)
+          const colour = match !== null ? ruleColour(match.ruleIndex) : null
+
           return (
             <li
               key={entry.name}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded text-xs font-mono transition-colors ${isHighlighted ? 'bg-amber-50 text-primary font-semibold' : 'text-muted'
+              className={`flex flex-col gap-0.5 px-3 py-1.5 text-xs font-mono transition-colors duration-150 min-w-max ${match ? 'bg-gray-50' : ''
                 }`}
             >
-              <span aria-hidden="true">📄</span>
-              <span className="whitespace-nowrap" title={entry.name}>
-                {entry.name}
-              </span>
-              {isHighlighted && (
-                <span className="ml-auto shrink-0 text-[10px] font-semibold text-amber-600 bg-amber-100 rounded px-1 py-0.5 uppercase">
-                  {ext}
+              <div className="flex items-center gap-2">
+                <span aria-hidden="true" className="shrink-0">
+                  📄
                 </span>
+                <span
+                  className={`whitespace-nowrap transition-colors duration-150 ${match ? 'text-primary font-medium' : 'text-muted'
+                    }`}
+                  title={entry.name}
+                >
+                  {entry.name}
+                </span>
+              </div>
+
+              {/* Destination pill — animates in when a rule matches */}
+              {match && colour && (
+                <div className="pl-6">
+                  <span
+                    className="inline-flex items-center gap-1 text-[10px] font-semibold rounded-full px-2 py-0.5 transition-all duration-200"
+                    style={{ ...colour.pillStyle, ...colour.ringStyle }}
+                  >
+                    <span aria-hidden="true">→</span>
+                    {match.destination}
+                    <span className="opacity-60 font-normal">· rule {match.ruleIndex + 1}</span>
+                  </span>
+                </div>
               )}
             </li>
           )
         })}
+
         {files.length === 0 && (
-          <li className="px-2 py-4 text-xs text-muted text-center">No files found.</li>
+          <li className="px-3 py-4 text-xs text-muted text-center">No files found.</li>
         )}
       </ul>
     </aside>
@@ -128,12 +215,6 @@ export function RulesScreen(): React.JSX.Element {
   // -------------------------------------------------------------------------
 
   const allValid = rows.every((r) => getRowError(r) === null)
-
-  // Collect all non-empty file_extension values so the file panel can highlight them
-  const activeExtensions = rows
-    .filter((r) => r.conditionType === 'file_extension' && r.conditionValue.trim() !== '')
-    .map((r) => r.conditionValue.trim().replace(/^\./, '').toLowerCase())
-
   const hasAnyInput = rows.some((r) => r.conditionValue !== '' || r.destinationFolder !== '')
 
   // -------------------------------------------------------------------------
@@ -156,9 +237,7 @@ export function RulesScreen(): React.JSX.Element {
   // Navigation
   // -------------------------------------------------------------------------
 
-  const handleBack = (): void => {
-    navigate('/organize')
-  }
+  const handleBack = (): void => navigate('/organize')
 
   const handlePreview = (): void => {
     if (!allValid) return
@@ -189,7 +268,7 @@ export function RulesScreen(): React.JSX.Element {
       <div className="flex flex-1 gap-4 p-6 overflow-hidden">
         {/* ---- Left: File reference panel ---- */}
         <div className="w-64 shrink-0 flex flex-col overflow-hidden">
-          <FilePanel files={files} activeExtensions={activeExtensions} />
+          <FilePanel files={files} rows={rows} />
         </div>
 
         {/* ---- Right: Rules panel ---- */}
@@ -213,6 +292,7 @@ export function RulesScreen(): React.JSX.Element {
                 const ruleNumber = index + 1
                 const showError =
                   rowError !== null && (row.conditionValue !== '' || row.destinationFolder !== '')
+                const colour = ruleColour(index)
 
                 return (
                   <li
@@ -221,9 +301,11 @@ export function RulesScreen(): React.JSX.Element {
                   >
                     {/* Top row: numbered badge + condition dropdown + trash */}
                     <div className="flex items-center gap-3">
+                      {/* Colour-matched numbered badge */}
                       <span
                         aria-label={`Rule ${ruleNumber}`}
-                        className="flex-none w-7 h-7 rounded-full bg-[#0A0A0A] text-white text-xs font-semibold flex items-center justify-center"
+                        className="flex-none w-7 h-7 rounded-full text-white text-xs font-semibold flex items-center justify-center"
+                        style={colour.badgeStyle}
                       >
                         {ruleNumber}
                       </span>
