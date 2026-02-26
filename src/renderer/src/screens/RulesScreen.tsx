@@ -156,16 +156,18 @@ function FilePanel({ files, rows }: FilePanelProps): React.JSX.Element {
           return (
             <li
               key={entry.name}
-              className={`flex flex-col gap-0.5 px-3 py-1.5 text-xs font-mono transition-colors duration-150 min-w-max ${match ? 'bg-gray-50' : ''
-                }`}
+              className={`flex flex-col gap-0.5 px-3 py-1.5 text-xs font-mono transition-colors duration-150 min-w-max ${
+                match ? 'bg-gray-50' : ''
+              }`}
             >
               <div className="flex items-center gap-2">
                 <span aria-hidden="true" className="shrink-0">
                   📄
                 </span>
                 <span
-                  className={`whitespace-nowrap transition-colors duration-150 ${match ? 'text-primary font-medium' : 'text-muted'
-                    }`}
+                  className={`whitespace-nowrap transition-colors duration-150 ${
+                    match ? 'text-primary font-medium' : 'text-muted'
+                  }`}
                   title={entry.name}
                 >
                   {entry.name}
