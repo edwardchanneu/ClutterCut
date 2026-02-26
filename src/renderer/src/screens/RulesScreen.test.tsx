@@ -80,6 +80,29 @@ describe('RulesScreen', () => {
       expect(panelContent.getByText('invoice-2023.pdf')).toBeInTheDocument()
       expect(panelContent.getByText('SubFolder')).toBeInTheDocument()
     })
+
+    it('initializes rules correctly from location state', () => {
+      const existingRows = [
+        {
+          id: 'test-rule-1',
+          conditionType: 'name_contains' as const,
+          conditionValue: 'invoice',
+          destinationFolder: 'Finances'
+        }
+      ]
+      renderRulesScreen({ rows: existingRows })
+
+      // Should load the 1 row from state, not the default empty one
+      const conditionSelects = screen.getAllByRole('combobox', { name: /Condition/i })
+      expect(conditionSelects).toHaveLength(1)
+      expect(conditionSelects[0]).toHaveValue('name_contains')
+
+      const valueInput = screen.getByRole('textbox', { name: /Contains Text/i })
+      expect(valueInput).toHaveValue('invoice')
+
+      const destInputs = screen.getByRole('textbox', { name: /Move to Folder/i })
+      expect(destInputs).toHaveValue('Finances')
+    })
   })
 
   describe('Rule Management', () => {

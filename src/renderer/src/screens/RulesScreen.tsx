@@ -11,6 +11,7 @@ import { RuleRow, computeFileMatch, ruleColour } from '../lib/ruleMatch'
 interface LocationState {
   folderPath?: string
   files?: ReadFolderEntry[]
+  rows?: RuleRow[]
 }
 
 // OS-illegal characters for destination folder names (Windows superset covers macOS too)
@@ -146,8 +147,9 @@ export default function RulesScreen(): React.JSX.Element {
   const state = (location.state as LocationState | null) ?? {}
   const folderPath = state.folderPath ?? null
   const files = state.files ?? []
+  const initialRows = state.rows && state.rows.length > 0 ? state.rows : [makeEmptyRow()]
 
-  const [rows, setRows] = useState<RuleRow[]>([makeEmptyRow()])
+  const [rows, setRows] = useState<RuleRow[]>(initialRows)
 
   // -------------------------------------------------------------------------
   // Derived state
