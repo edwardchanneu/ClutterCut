@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { ReadFolderEntry } from '../../../shared/ipcChannels'
-import { RuleRow, computeFileMatch } from '../lib/ruleMatch'
+import { RuleRow, computeFileMatch, ruleColour } from '../lib/ruleMatch'
 
 interface LocationState {
   folderPath?: string
@@ -23,7 +23,7 @@ export default function PreviewScreen(): React.JSX.Element {
   // Group matched files by destination folder
   const matchMap = new Map<string, ReadFolderEntry[]>()
   const unmatchedFiles: ReadFolderEntry[] = []
-  const matchedFileNames = new Set<string>()
+  const matchedDestinations = new Map<string, string>()
 
   let movedCount = 0
 
@@ -31,7 +31,7 @@ export default function PreviewScreen(): React.JSX.Element {
     const match = computeFileMatch(file.name, rows)
     if (match) {
       movedCount++
-      matchedFileNames.add(file.name)
+      matchedDestinations.set(file.name, match.destination)
       if (!matchMap.has(match.destination)) {
         matchMap.set(match.destination, [])
       }
@@ -45,6 +45,17 @@ export default function PreviewScreen(): React.JSX.Element {
     .filter((d) => existingDirs.has(d))
     .sort()
 
+  const newDirs = Array.from(matchMap.keys())
+    .filter((d) => !existingDirs.has(d))
+    .sort()
+
+  // Give each unique destination folder a consistent colour index
+  const allDestinations = [...changedExistingDirs, ...newDirs]
+  const destColourIndex = new Map<string, number>()
+  allDestinations.forEach((dest, i) => {
+    destColourIndex.set(dest, i)
+  })
+
   const originalDirsCount = files.length - fileEntries.length
   const originalFilesCount = fileEntries.length
 
@@ -52,9 +63,6 @@ export default function PreviewScreen(): React.JSX.Element {
     return `${count} ${word}${count === 1 ? '' : 's'}`
   }
 
-  const newDirs = Array.from(matchMap.keys())
-    .filter((d) => !existingDirs.has(d))
-    .sort()
   const unchangedDirs = Array.from(existingDirs)
     .filter((d) => !matchMap.has(d))
     .sort()
@@ -127,17 +135,24 @@ export default function PreviewScreen(): React.JSX.Element {
                 .filter((f) => f.isFile)
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .map((f) => {
-                  const isMoved = matchedFileNames.has(f.name)
+                  const destName = matchedDestinations.get(f.name)
+                  const isMoved = destName !== undefined
+                  const colour =
+                    destName !== undefined && destColourIndex.has(destName)
+                      ? ruleColour(destColourIndex.get(destName)!)
+                      : null
                   return (
                     <li
                       key={f.name}
+                      style={colour ? colour.pillStyle : undefined}
                       className={`px-3 py-1.5 text-sm font-mono flex items-center gap-2 ${
-                        isMoved ? 'text-green-700 bg-green-50/50' : 'text-muted'
+                        isMoved ? '' : 'text-muted'
                       }`}
                     >
                       <span
                         aria-hidden="true"
-                        className={`shrink-0 ${isMoved ? 'text-green-500' : 'text-gray-400'}`}
+                        className={`shrink-0 ${isMoved ? 'opacity-80' : 'text-gray-400'}`}
+                        style={colour ? { color: 'inherit' } : undefined}
                       >
                         📄
                       </span>
@@ -179,33 +194,49 @@ export default function PreviewScreen(): React.JSX.Element {
               {/* Changed Existing Directories */}
               {changedExistingDirs.map((dest) => {
                 const matchedFilesForDest = matchMap.get(dest)!
+                const colour = ruleColour(destColourIndex.get(dest)!)
+                const borderColor = `hsl(${Math.round((destColourIndex.get(dest)! * 137.508) % 360)}, 55%, 78%)`
+                const headerBg = `hsl(${Math.round((destColourIndex.get(dest)! * 137.508) % 360)}, 80%, 96%)`
+
                 return (
                   <div
                     key={dest}
-                    className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200"
+                    style={{ borderColor }}
+                    className="bg-white rounded-lg shadow-sm overflow-hidden border"
                   >
-                    <div className="px-3 py-2 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                      <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+                    <div
+                      className="px-3 py-2 border-b flex items-center justify-between"
+                      style={{ backgroundColor: headerBg, borderColor }}
+                    >
+                      <h3
+                        className="text-sm font-semibold flex items-center gap-2"
+                        style={{ color: colour.pillStyle.color }}
+                      >
                         <span aria-hidden="true">📁</span>
                         {dest}
-                        <span className="text-xs font-normal text-muted ml-1">(Existing)</span>
+                        <span className="text-xs font-normal ml-1 opacity-70">(Existing)</span>
                       </h3>
-                      <span className="text-xs font-medium text-muted bg-white px-2 py-0.5 rounded-full border border-gray-200 text-right">
+                      <span
+                        className="text-xs font-medium px-2 py-0.5 rounded-full border bg-white"
+                        style={{ color: colour.pillStyle.color, borderColor }}
+                      >
                         {`1 folder, ${pluralize(matchedFilesForDest.length, 'file')}`}
                       </span>
                     </div>
                     <ul className="divide-y divide-gray-50 max-h-48 overflow-y-auto">
-                      {matchedFilesForDest.map((file) => (
-                        <li
-                          key={file.name}
-                          className="px-4 py-1.5 text-sm font-mono text-green-700 flex items-center gap-2 bg-green-50/50"
-                        >
-                          <span aria-hidden="true" className="shrink-0 text-green-500">
-                            📄
-                          </span>
-                          {file.name}
-                        </li>
-                      ))}
+                      {matchedFilesForDest.map((file) => {
+                        return (
+                          <li
+                            key={file.name}
+                            className="px-4 py-1.5 text-sm font-mono text-gray-700 flex items-center gap-2"
+                          >
+                            <span aria-hidden="true" className="shrink-0 text-gray-400">
+                              📄
+                            </span>
+                            {file.name}
+                          </li>
+                        )
+                      })}
                     </ul>
                   </div>
                 )
@@ -214,33 +245,49 @@ export default function PreviewScreen(): React.JSX.Element {
               {/* New Directories */}
               {newDirs.map((dest) => {
                 const matchedFilesForDest = matchMap.get(dest)!
+                const colour = ruleColour(destColourIndex.get(dest)!)
+                const borderColor = `hsl(${Math.round((destColourIndex.get(dest)! * 137.508) % 360)}, 55%, 78%)`
+                const headerBg = `hsl(${Math.round((destColourIndex.get(dest)! * 137.508) % 360)}, 80%, 96%)`
+
                 return (
                   <div
                     key={dest}
-                    className="bg-white rounded-lg shadow-sm overflow-hidden border border-blue-200"
+                    style={{ borderColor }}
+                    className="bg-white rounded-lg shadow-sm overflow-hidden border"
                   >
-                    <div className="px-3 py-2 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-blue-700 flex items-center gap-2">
+                    <div
+                      className="px-3 py-2 border-b flex items-center justify-between"
+                      style={{ backgroundColor: headerBg, borderColor }}
+                    >
+                      <h3
+                        className="text-sm font-bold flex items-center gap-2"
+                        style={{ color: colour.pillStyle.color }}
+                      >
                         <span aria-hidden="true">📁</span>
                         {dest}
-                        <span className="text-xs font-normal text-blue-600 ml-1">(New)</span>
+                        <span className="text-xs font-normal ml-1 opacity-80">(New)</span>
                       </h3>
-                      <span className="text-xs font-medium text-blue-600 bg-white px-2 py-0.5 rounded-full border border-blue-200">
+                      <span
+                        className="text-xs font-medium bg-white px-2 py-0.5 rounded-full border"
+                        style={{ color: colour.pillStyle.color, borderColor }}
+                      >
                         {pluralize(matchedFilesForDest.length, 'file')}
                       </span>
                     </div>
-                    <ul className="divide-y divide-blue-50 max-h-48 overflow-y-auto">
-                      {matchedFilesForDest.map((file) => (
-                        <li
-                          key={file.name}
-                          className="px-4 py-1.5 text-sm font-mono text-green-700 flex items-center gap-2 bg-green-50/50"
-                        >
-                          <span aria-hidden="true" className="shrink-0 text-green-500">
-                            📄
-                          </span>
-                          {file.name}
-                        </li>
-                      ))}
+                    <ul className="divide-y divide-gray-50 max-h-48 overflow-y-auto">
+                      {matchedFilesForDest.map((file) => {
+                        return (
+                          <li
+                            key={file.name}
+                            className="px-4 py-1.5 text-sm font-mono text-gray-700 flex items-center gap-2"
+                          >
+                            <span aria-hidden="true" className="shrink-0 text-gray-400">
+                              📄
+                            </span>
+                            {file.name}
+                          </li>
+                        )
+                      })}
                     </ul>
                   </div>
                 )
