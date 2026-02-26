@@ -33,7 +33,3 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
-
-# testing
-playwright-report/
-test-results/

@@ -22,11 +22,6 @@ vi.mock('../lib/supabase', () => ({
   }
 }))
 
-const mockSetIsGuest = vi.fn()
-vi.mock('../context/GuestContext', () => ({
-  useGuest: () => ({ isGuest: false, setIsGuest: mockSetIsGuest })
-}))
-
 describe('LoginScreen', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -143,16 +138,5 @@ describe('LoginScreen', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /continue as guest/i }))
     expect(mockNavigate).toHaveBeenCalledWith('/organize')
-  })
-
-  it('sets isGuest to true when "Continue as Guest" is clicked', () => {
-    render(
-      <MemoryRouter>
-        <LoginScreen />
-      </MemoryRouter>
-    )
-
-    fireEvent.click(screen.getByRole('button', { name: /continue as guest/i }))
-    expect(mockSetIsGuest).toHaveBeenCalledWith(true)
   })
 })

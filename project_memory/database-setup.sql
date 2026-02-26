@@ -25,22 +25,3 @@ create policy "Users can insert their own runs" on organization_runs
 
 create policy "Users can update their own runs" on organization_runs
     for update using (auth.uid() = user_id);
-
--- E2E Testing Helper: Allows a test user to delete themselves without needing the Service Role Key.
--- This function contains strict safeguards so it can ONLY delete users whose email starts with 'test_e2e_'.
-create or replace function delete_test_user()
-returns void as $$
-declare
-    _user_email text;
-begin
-    -- 1. Get the email of the currently authenticated user
-    select email into _user_email from auth.users where id = auth.uid();
-    
-    -- 2. Strictly verify the email format to prevent deleting real users
-    if _user_email like 'test_e2e_%@example.com' then
-        delete from auth.users where id = auth.uid();
-    else
-        raise exception 'Unauthorized: Only automated test users can self-delete.';
-    end if;
-end;
-$$ language plpgsql security definer set search_path = public;
