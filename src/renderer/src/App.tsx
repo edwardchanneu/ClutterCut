@@ -4,9 +4,9 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import HistoryScreen from './screens/HistoryScreen'
 import LoginScreen from './screens/LoginScreen'
 import OrganizeScreen from './screens/OrganizeScreen'
+import PreviewScreen from './screens/PreviewScreen'
 import RulesScreen from './screens/RulesScreen'
 import SignUpScreen from './screens/SignUpScreen'
-import PreviewScreen from './screens/PreviewScreen'
 import { useAuth } from './hooks/useAuth'
 
 export function AppRoutes(): React.JSX.Element {
