@@ -175,11 +175,12 @@ Types: `feature`, `fix`, `chore`, `test`, `docs`, `refactor`, `style`, `ci`
 
 ### PR Workflow
 1. Branch from `develop`
-2. PR title format: `[#<issue-number>] Short description of change`
-3. PR description must link to the GitHub Issue: `Closes #<issue-number>`
-4. All acceptance criteria from the linked Issue must be checked off before requesting review
-5. Minimum 1 reviewer approval required before merge
-6. Squash merge into `develop`; releases are cut from `main` via version tags
+2. Run the CI pipeline locally in the IDE (`npm run lint`, `npx vitest run`, etc.) before committing any code to the branch
+3. PR title format: `[#<issue-number>] Short description of change`
+4. PR description must link to the GitHub Issue: `Closes #<issue-number>`
+5. All acceptance criteria from the linked Issue must be checked off before requesting review
+6. Minimum 1 reviewer approval required before merge
+7. Squash merge into `develop`; releases are cut from `main` via version tags
 
 ### Release Process
 - Tag `main` with `vX.Y.Z` to trigger `.github/workflows/release.yml`
@@ -217,6 +218,7 @@ Types: `feature`, `fix`, `chore`, `test`, `docs`, `refactor`, `style`, `ci`
 
 ### ✅ DO
 
+- Run the CI pipeline locally in the IDE (e.g., `npm run lint`, `npx vitest run`) before committing any code to a branch
 - Use `fs/promises` (async) for all file operations in the main process
 - Use TanStack Query for all Supabase reads — include loading, error, and empty states
 - Capture both before and after snapshots atomically around the execute step
