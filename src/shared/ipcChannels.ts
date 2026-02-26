@@ -61,3 +61,32 @@ export interface ReadFolderResponse {
    */
   error: string | null
 }
+
+// ---------------------------------------------------------------------------
+// EXECUTE_RULES
+// Renderer sends a target folder and user-defined rules.
+// Main process moves the files according to the rules and returns a result snapshot.
+// ---------------------------------------------------------------------------
+
+export const EXECUTE_RULES = 'EXECUTE_RULES'
+
+export interface ExecuteRulesRequest {
+  folderPath: string
+  rules: Rule[]
+}
+
+/** Represents a JSON snapshot of the folder tree. */
+export interface FolderSnapshot {
+  /** Root directory path as key, array of top-level filenames and subdirectory names as strings */
+  [rootPath: string]: (string | Record<string, unknown>)[]
+}
+
+export interface ExecuteRulesResponse {
+  success: boolean
+  movedCount: number
+  failedCount: number
+  errors: { fileName: string; reason: string }[]
+  beforeSnapshot: Record<string, string[]>
+  /** ClutterCut-touched folders as objects with moved files as values; untouched subdirectories remain as plain strings */
+  afterSnapshot: Record<string, (string | Record<string, string[]>)[]>
+}
