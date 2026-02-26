@@ -6,12 +6,7 @@ import type { ConditionType, ReadFolderEntry } from '../../../shared/ipcChannels
 // Types
 // ---------------------------------------------------------------------------
 
-interface RuleRow {
-  id: string
-  conditionType: ConditionType
-  conditionValue: string
-  destinationFolder: string
-}
+import { RuleRow, computeFileMatch, ruleColour } from '../lib/ruleMatch'
 
 interface LocationState {
   folderPath?: string
@@ -43,62 +38,6 @@ function makeEmptyRow(): RuleRow {
 // ---------------------------------------------------------------------------
 
 /** Returns extension portion (without dot), lower-cased, or '' */
-function extOf(name: string): string {
-  const dot = name.lastIndexOf('.')
-  return dot > 0 ? name.slice(dot + 1).toLowerCase() : ''
-}
-
-interface FileMatch {
-  ruleIndex: number
-  destination: string
-}
-
-/**
- * Evaluates rules top-to-bottom and returns the first match for a filename,
- * or null if no rule applies. Only considers rows that are fully filled in.
- */
-function computeFileMatch(fileName: string, rows: RuleRow[]): FileMatch | null {
-  for (let i = 0; i < rows.length; i++) {
-    const row = rows[i]
-    const val = row.conditionValue.trim().replace(/^\./, '').toLowerCase()
-    const dest = row.destinationFolder.trim()
-    if (!val || !dest) continue // skip incomplete rows
-
-    if (row.conditionType === 'file_extension') {
-      if (extOf(fileName) === val) return { ruleIndex: i, destination: dest }
-    } else if (row.conditionType === 'name_contains') {
-      if (fileName.toLowerCase().includes(val)) return { ruleIndex: i, destination: dest }
-    }
-  }
-  return null
-}
-
-// ---------------------------------------------------------------------------
-// Colour generator — golden angle on HSL wheel, unlimited unique colours
-// ---------------------------------------------------------------------------
-
-/**
- * Distributes rule colours using the golden angle (~137.5°) so consecutive
- * rules are as perceptually far apart as possible, with no hard limit.
- */
-function ruleColour(index: number): {
-  badgeStyle: React.CSSProperties
-  pillStyle: React.CSSProperties
-  ringStyle: React.CSSProperties
-} {
-  const hue = Math.round((index * 137.508) % 360)
-  return {
-    // Badge: vivid, white text
-    badgeStyle: { background: `hsl(${hue}, 60%, 42%)` },
-    // Pill background + text
-    pillStyle: {
-      background: `hsl(${hue}, 80%, 96%)`,
-      color: `hsl(${hue}, 55%, 32%)`
-    },
-    // Subtle ring border
-    ringStyle: { boxShadow: `0 0 0 1px hsl(${hue}, 55%, 78%) inset` }
-  }
-}
 
 // ---------------------------------------------------------------------------
 // FilePanel sub-component
@@ -201,7 +140,7 @@ function FilePanel({ files, rows }: FilePanelProps): React.JSX.Element {
 // Main component
 // ---------------------------------------------------------------------------
 
-export function RulesScreen(): React.JSX.Element {
+export default function RulesScreen(): React.JSX.Element {
   const navigate = useNavigate()
   const location = useLocation()
   const state = (location.state as LocationState | null) ?? {}
@@ -266,7 +205,7 @@ export function RulesScreen(): React.JSX.Element {
 
   const handlePreview = (): void => {
     if (!allValid) return
-    // Navigation to /organize/preview will be wired in the next issue
+    navigate('/organize/preview', { state: { folderPath, files, rows } })
   }
 
   // -------------------------------------------------------------------------

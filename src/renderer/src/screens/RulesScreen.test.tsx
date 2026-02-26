@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { MemoryRouter } from 'react-router-dom'
-import { RulesScreen } from './RulesScreen'
+import RulesScreen from './RulesScreen'
 import type { ReadFolderEntry } from '../../../shared/ipcChannels'
 
 // ---------------------------------------------------------------------------
