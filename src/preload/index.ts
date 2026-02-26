@@ -1,8 +1,18 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { SELECT_FOLDER, READ_FOLDER } from '../shared/ipcChannels'
+import type {
+  ReadFolderRequest,
+  ReadFolderResponse,
+  SelectFolderResponse
+} from '../shared/ipcChannels'
 
-// Custom APIs for renderer
-const api = {}
+// Custom APIs exposed to the renderer via contextBridge
+const api = {
+  selectFolder: (): Promise<SelectFolderResponse> => ipcRenderer.invoke(SELECT_FOLDER),
+  readFolder: (req: ReadFolderRequest): Promise<ReadFolderResponse> =>
+    ipcRenderer.invoke(READ_FOLDER, req)
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise

@@ -4,6 +4,8 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import HistoryScreen from './screens/HistoryScreen'
 import LoginScreen from './screens/LoginScreen'
 import OrganizeScreen from './screens/OrganizeScreen'
+import PreviewScreen from './screens/PreviewScreen'
+import RulesScreen from './screens/RulesScreen'
 import SignUpScreen from './screens/SignUpScreen'
 import { useAuth } from './hooks/useAuth'
 
@@ -40,6 +42,8 @@ export function AppRoutes(): React.JSX.Element {
           </ProtectedRoute>
         }
       />
+      <Route path="/organize/rules" element={<RulesScreen />} />
+      <Route path="/organize/preview" element={<PreviewScreen />} />
       {/* Catch-all: redirect to organize if session exists, else login */}
       <Route path="*" element={<Navigate to={session ? '/organize' : '/login'} replace />} />
     </Routes>
