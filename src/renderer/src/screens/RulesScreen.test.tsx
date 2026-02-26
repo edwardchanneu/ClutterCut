@@ -216,9 +216,48 @@ describe('RulesScreen', () => {
       const destInput = screen.getByRole('textbox', { name: /Move to Folder/i })
 
       fireEvent.change(conditionInput, { target: { value: 'pdf' } })
-      fireEvent.change(destInput, { target: { value: 'Documents' } })
+      expect(previewBtn).toBeDisabled() // Because destination is empty
+      expect(screen.getByText(/Destination folder must not be empty/i)).toBeInTheDocument()
+      expect(screen.getByText(/Resolve errors to enable preview/i)).toBeInTheDocument()
 
-      // Now valid
+      fireEvent.change(destInput, { target: { value: 'Documents' } })
+      expect(previewBtn).not.toBeDisabled() // Now valid
+      expect(screen.queryByText(/Destination folder must not be empty/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Resolve errors to enable preview/i)).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Rule Warnings', () => {
+    it('shows a warning when duplicate rules are added', () => {
+      renderRulesScreen()
+
+      const addRuleBtn = screen.getByRole('button', { name: /\+ Add Rule/i })
+      fireEvent.click(addRuleBtn) // Add a second rule
+
+      const conditionInputs = screen.getAllByRole('textbox', { name: /Extension/i })
+      const destInputs = screen.getAllByRole('textbox', { name: /Move to Folder/i })
+
+      // Set first rule
+      fireEvent.change(conditionInputs[0], { target: { value: 'pdf' } })
+      fireEvent.change(destInputs[0], { target: { value: 'Documents' } })
+
+      // Set second rule to same condition (testing case-insensitivity and leading dot)
+      fireEvent.change(conditionInputs[1], { target: { value: '.PDF' } })
+      fireEvent.change(destInputs[1], { target: { value: 'Other Folder' } })
+
+      const warnings = screen.getAllByText(/Duplicate rule detected/i)
+      expect(warnings).toHaveLength(2) // Both rules show the warning
+
+      // Cannot preview because duplicate is treated as error
+      const previewBtn = screen.getByRole('button', { name: /Preview Changes/i })
+      expect(previewBtn).toBeDisabled()
+      expect(screen.getByText(/Resolve errors to enable Preview/i)).toBeInTheDocument()
+
+      // Change second rule to something else
+      fireEvent.change(conditionInputs[1], { target: { value: 'jpg' } })
+      expect(screen.queryByText(/Duplicate rule detected/i)).not.toBeInTheDocument()
+
+      // Now allowed
       expect(previewBtn).not.toBeDisabled()
     })
   })

@@ -214,7 +214,17 @@ export function RulesScreen(): React.JSX.Element {
   // Derived state
   // -------------------------------------------------------------------------
 
-  const allValid = rows.every((r) => getRowError(r) === null)
+  const duplicateCounts: Record<string, number> = {}
+  rows.forEach((r) => {
+    if (r.conditionValue.trim() !== '') {
+      const key = `${r.conditionType}:${r.conditionValue.trim().replace(/^\./, '').toLowerCase()}`
+      duplicateCounts[key] = (duplicateCounts[key] || 0) + 1
+    }
+  })
+
+  const hasDuplicate = Object.values(duplicateCounts).some((count) => count > 1)
+
+  const allValid = rows.every((r) => getRowError(r) === null) && !hasDuplicate
   const hasAnyInput = rows.some((r) => r.conditionValue !== '' || r.destinationFolder !== '')
 
   const fileEntries = files.filter((f) => f.isFile)
@@ -311,6 +321,19 @@ export function RulesScreen(): React.JSX.Element {
 
                 const isComplete = rowError === null
                 const showNoMatchWarning = isComplete && matchCounts[index] === 0
+
+                const key = `${row.conditionType}:${row.conditionValue.trim().replace(/^\./, '').toLowerCase()}`
+                const isDuplicate =
+                  row.conditionValue.trim() !== '' && (duplicateCounts[key] || 0) > 1
+
+                const showDuplicateError = isDuplicate && rowError === null
+
+                const conditionError =
+                  (showError && row.conditionValue.trim() === '') || showDuplicateError
+                const destEmptyError = showError && row.destinationFolder.trim() === ''
+                const destIllegalError =
+                  showError && ILLEGAL_FOLDER_CHARS.test(row.destinationFolder)
+                const destError = destEmptyError || destIllegalError
 
                 return (
                   <li
@@ -418,7 +441,9 @@ export function RulesScreen(): React.JSX.Element {
                           onChange={(e) => updateRow(row.id, { conditionValue: e.target.value })}
                           placeholder={row.conditionType === 'file_extension' ? 'pdf' : 'invoice'}
                           aria-describedby={showError ? `row-error-${row.id}` : undefined}
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-primary placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className={`w-full rounded-lg border ${
+                            conditionError ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                          } px-3 py-2 text-sm text-primary placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                         />
                       </div>
 
@@ -436,7 +461,9 @@ export function RulesScreen(): React.JSX.Element {
                           onChange={(e) => updateRow(row.id, { destinationFolder: e.target.value })}
                           placeholder="Documents"
                           aria-describedby={showError ? `row-error-${row.id}` : undefined}
-                          className="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-primary placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                          className={`w-full rounded-lg border ${
+                            destError ? 'border-red-500 bg-red-50' : 'border-gray-300 bg-white'
+                          } px-3 py-2 text-sm text-primary placeholder:text-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary`}
                         />
                       </div>
                     </div>
@@ -453,7 +480,7 @@ export function RulesScreen(): React.JSX.Element {
                     )}
 
                     {/* No match warning */}
-                    {!showError && showNoMatchWarning && (
+                    {!showError && !showDuplicateError && showNoMatchWarning && (
                       <p
                         id={`row-warning-${row.id}`}
                         role="status"
@@ -478,6 +505,17 @@ export function RulesScreen(): React.JSX.Element {
                         This rule does not match any files in this folder.
                       </p>
                     )}
+
+                    {/* Duplicate warning (now an error) */}
+                    {!showError && showDuplicateError && (
+                      <p
+                        id={`row-duplicate-${row.id}`}
+                        role="alert"
+                        className="pl-10 text-xs text-red-500"
+                      >
+                        Duplicate rule detected. This condition already exists.
+                      </p>
+                    )}
                   </li>
                 )
               })}
@@ -494,9 +532,9 @@ export function RulesScreen(): React.JSX.Element {
             </button>
 
             {/* Validation summary */}
-            {!allValid && hasAnyInput && (
+            {(!allValid || hasDuplicate) && hasAnyInput && (
               <p role="status" className="text-xs text-muted text-center -mt-2">
-                Complete all rule fields to enable Preview.
+                Resolve errors to enable Preview.
               </p>
             )}
 
@@ -505,8 +543,8 @@ export function RulesScreen(): React.JSX.Element {
               id="preview-btn"
               type="button"
               onClick={handlePreview}
-              disabled={!allValid}
-              aria-disabled={!allValid}
+              disabled={!allValid || hasDuplicate}
+              aria-disabled={!allValid || hasDuplicate}
               className="w-full py-3 rounded-lg bg-[#0A0A0A] text-white text-sm font-semibold transition-opacity disabled:opacity-40 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
             >
               Preview Changes
