@@ -532,7 +532,7 @@ export function RulesScreen(): React.JSX.Element {
             </button>
 
             {/* Validation summary */}
-            {(!allValid || hasDuplicate) && hasAnyInput && (
+            {!allValid && hasAnyInput && (
               <p role="status" className="text-xs text-muted text-center -mt-2">
                 Resolve errors to enable Preview.
               </p>
@@ -543,8 +543,8 @@ export function RulesScreen(): React.JSX.Element {
               id="preview-btn"
               type="button"
               onClick={handlePreview}
-              disabled={!allValid || hasDuplicate}
-              aria-disabled={!allValid || hasDuplicate}
+              disabled={!allValid}
+              aria-disabled={!allValid}
               className="w-full py-3 rounded-lg bg-[#0A0A0A] text-white text-sm font-semibold transition-opacity disabled:opacity-40 hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary"
             >
               Preview Changes

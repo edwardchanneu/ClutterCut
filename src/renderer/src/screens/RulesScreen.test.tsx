@@ -259,7 +259,7 @@ describe('RulesScreen', () => {
       fireEvent.change(conditionInputs[1], { target: { value: 'jpg' } })
       expect(screen.queryByText(/Duplicate rule detected/i)).not.toBeInTheDocument()
 
-      // Now allowed
+      // Now valid
       expect(previewBtn).not.toBeDisabled()
     })
   })
