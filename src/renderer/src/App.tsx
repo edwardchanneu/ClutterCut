@@ -41,14 +41,7 @@ export function AppRoutes(): React.JSX.Element {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/organize/rules"
-        element={
-          <ProtectedRoute>
-            <RulesScreen />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/organize/rules" element={<RulesScreen />} />
       {/* Catch-all: redirect to organize if session exists, else login */}
       <Route path="*" element={<Navigate to={session ? '/organize' : '/login'} replace />} />
     </Routes>
