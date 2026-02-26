@@ -5,6 +5,30 @@ export const SELECT_FOLDER = 'SELECT_FOLDER'
 export const READ_FOLDER = 'READ_FOLDER'
 
 // ---------------------------------------------------------------------------
+// Rule types — shared between renderer (UI) and main process (execution)
+// ---------------------------------------------------------------------------
+
+/** The type of condition a rule evaluates against a file. */
+export type ConditionType = 'file_extension' | 'name_contains'
+
+/**
+ * A single user-defined rule.
+ * Rules are evaluated top-to-bottom; a file matches the first rule it satisfies.
+ */
+export interface Rule {
+  /** How the file is evaluated. */
+  conditionType: ConditionType
+  /**
+   * The value to match against.
+   * For file_extension: a bare extension string, e.g. "pdf" (no leading dot).
+   * For name_contains: a substring to search for in the full filename.
+   */
+  conditionValue: string
+  /** The name of the destination folder inside the selected root folder. */
+  destinationFolder: string
+}
+
+// ---------------------------------------------------------------------------
 // SELECT_FOLDER
 // Renderer sends no payload; main opens a native folder-picker dialog.
 // ---------------------------------------------------------------------------
