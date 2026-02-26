@@ -74,10 +74,6 @@ function computeFileMatch(fileName: string, rows: RuleRow[]): FileMatch | null {
 }
 
 // ---------------------------------------------------------------------------
-// Colour palette — one per rule (cycles every 5)
-// ---------------------------------------------------------------------------
-
-// ---------------------------------------------------------------------------
 // Colour generator — golden angle on HSL wheel, unlimited unique colours
 // ---------------------------------------------------------------------------
 
