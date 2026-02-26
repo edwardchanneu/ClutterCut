@@ -28,6 +28,14 @@ vi.mock('../hooks/useFolderSelection', () => ({
   useFolderSelection: vi.fn()
 }))
 
+vi.mock('../hooks/useAuth', () => ({
+  useAuth: vi.fn(() => ({ session: null }))
+}))
+
+vi.mock('../context/GuestContext', () => ({
+  useGuest: vi.fn(() => ({ isGuest: false }))
+}))
+
 // ---------------------------------------------------------------------------
 // Test Data & Helpers
 // ---------------------------------------------------------------------------
