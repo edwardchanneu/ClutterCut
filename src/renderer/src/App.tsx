@@ -1,12 +1,14 @@
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { GuestProvider } from './context/GuestProvider'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import HistoryScreen from './screens/HistoryScreen'
 import LoginScreen from './screens/LoginScreen'
 import OrganizeScreen from './screens/OrganizeScreen'
 import SignUpScreen from './screens/SignUpScreen'
 import { RulesScreen } from './screens/RulesScreen'
-import ProtectedRoute from './components/ProtectedRoute'
 import { useAuth } from './hooks/useAuth'
 
-function AppRoutes(): React.JSX.Element {
+export function AppRoutes(): React.JSX.Element {
   const { session, loading } = useAuth()
 
   if (loading) {
@@ -30,22 +32,16 @@ function AppRoutes(): React.JSX.Element {
         path="/signup"
         element={session ? <Navigate to="/organize" replace /> : <SignUpScreen />}
       />
+      <Route path="/organize" element={<OrganizeScreen />} />
       <Route
-        path="/organize"
+        path="/history"
         element={
           <ProtectedRoute>
-            <OrganizeScreen />
+            <HistoryScreen />
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/organize/rules"
-        element={
-          <ProtectedRoute>
-            <RulesScreen />
-          </ProtectedRoute>
-        }
-      />
+      <Route path="/organize/rules" element={<RulesScreen />} />
       {/* Catch-all: redirect to organize if session exists, else login */}
       <Route path="*" element={<Navigate to={session ? '/organize' : '/login'} replace />} />
     </Routes>
@@ -54,9 +50,11 @@ function AppRoutes(): React.JSX.Element {
 
 function App(): React.JSX.Element {
   return (
-    <HashRouter>
-      <AppRoutes />
-    </HashRouter>
+    <GuestProvider>
+      <HashRouter>
+        <AppRoutes />
+      </HashRouter>
+    </GuestProvider>
   )
 }
 
