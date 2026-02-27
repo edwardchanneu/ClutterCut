@@ -1,8 +1,9 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { render, screen, within, waitFor, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import userEvent from '@testing-library/user-event'
 import PreviewScreen from './PreviewScreen'
-import type { ReadFolderEntry } from '../../../shared/ipcChannels'
+import type { ReadFolderEntry, ExecuteRulesResponse } from '../../../shared/ipcChannels'
 import type { RuleRow } from '../lib/ruleMatch'
 
 // ---------------------------------------------------------------------------
@@ -67,6 +68,11 @@ describe('PreviewScreen Layout Update', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockLocationState = {}
+    window.api = {
+      selectFolder: vi.fn(),
+      readFolder: vi.fn(),
+      executeRules: vi.fn()
+    } as unknown as typeof window.api
   })
 
   describe('Rendering & Two Columns', () => {
@@ -165,6 +171,82 @@ describe('PreviewScreen Layout Update', () => {
       fireEvent.click(cancelBtn)
 
       expect(mockNavigate).toHaveBeenCalledWith('/organize')
+    })
+  })
+
+  it('calls executeRules and navigates to success screen on Approval', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(window.api.executeRules).mockResolvedValueOnce({
+      success: true,
+      movedCount: 1,
+      failedCount: 0,
+      errors: [],
+      beforeSnapshot: {},
+      afterSnapshot: {}
+    } as unknown as ExecuteRulesResponse)
+
+    const mockState = { folderPath: '/test/folder', files: dummyFiles, rows: dummyRows }
+    mockLocationState = mockState
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/preview', state: mockState }]}>
+        <Routes>
+          <Route path="/preview" element={<PreviewScreen />} />
+          <Route path="/organize/success" element={<div data-testid="success-screen" />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const executeBtn = screen.getByRole('button', { name: /Approve and organize files/i })
+    await waitFor(() => expect(executeBtn).not.toBeDisabled())
+
+    await user.click(executeBtn)
+
+    expect(window.api.executeRules).toHaveBeenCalledWith({
+      folderPath: '/test/folder',
+      rules: dummyRows.map((r) => {
+        const { id, ...rest } = r
+        void id
+        return rest
+      })
+    })
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/organize/success', expect.anything())
+    })
+  })
+
+  it('navigates to failure screen when execution has errors', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(window.api.executeRules).mockResolvedValueOnce({
+      success: false,
+      movedCount: 0,
+      failedCount: 1,
+      errors: [{ fileName: 'report.pdf', reason: 'Error' }],
+      beforeSnapshot: {},
+      afterSnapshot: {}
+    } as unknown as ExecuteRulesResponse)
+
+    const mockState = { folderPath: '/test/folder', files: dummyFiles, rows: dummyRows }
+    mockLocationState = mockState
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/preview', state: mockState }]}>
+        <Routes>
+          <Route path="/preview" element={<PreviewScreen />} />
+          <Route path="/organize/failure" element={<div data-testid="failure-screen" />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const executeBtn = screen.getByRole('button', { name: /Approve and organize files/i })
+    await waitFor(() => expect(executeBtn).not.toBeDisabled())
+    await user.click(executeBtn)
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/organize/failure', expect.anything())
     })
   })
 })
