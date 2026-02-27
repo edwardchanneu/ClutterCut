@@ -47,7 +47,7 @@ export async function executeRules(req: ExecuteRulesRequest): Promise<ExecuteRul
     response.beforeSnapshot[folderPath] = allNames
 
     const filesToMove = entries.filter((e) => e.isFile() && !e.name.startsWith('.'))
-    
+
     // Group files by destination
     const destinationMap = new Map<string, string[]>()
     const unmodifiedItems = new Set<string>(allNames)
@@ -67,7 +67,7 @@ export async function executeRules(req: ExecuteRulesRequest): Promise<ExecuteRul
           let newFileName = file.name
           let destFilePath = path.join(destFolderPath, newFileName)
           let counter = 1
-          
+
           while (true) {
             try {
               await fs.access(destFilePath)
@@ -87,12 +87,12 @@ export async function executeRules(req: ExecuteRulesRequest): Promise<ExecuteRul
           await fs.rename(sourcePath, destFilePath)
 
           response.movedCount++
-          
+
           if (!destinationMap.has(destFolder)) {
             destinationMap.set(destFolder, [])
           }
           destinationMap.get(destFolder)!.push(newFileName)
-          
+
           unmodifiedItems.delete(file.name)
         } catch (err: unknown) {
           response.success = false

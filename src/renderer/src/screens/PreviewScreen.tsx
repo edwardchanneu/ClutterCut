@@ -358,16 +358,16 @@ export default function PreviewScreen(): React.JSX.Element {
                   const req = {
                     folderPath,
                     // Map RulesRow to Rule expected by IPC (only enabled rules)
-                    rules: rows.map(r => ({
+                    rules: rows.map((r) => ({
                       conditionType: r.conditionType,
                       conditionValue: r.conditionValue,
                       destinationFolder: r.destinationFolder
                     }))
                   }
-                  
+
                   // Request main process to execute the move
                   const response = await window.api.executeRules(req)
-                  
+
                   if (response.success && response.failedCount === 0) {
                     navigate('/organize/success', { state: { response } })
                   } else {
@@ -376,17 +376,22 @@ export default function PreviewScreen(): React.JSX.Element {
                 } catch (err) {
                   console.error('Execution Failed:', err)
                   // Navigate to failure with a simulated error for display
-                  navigate('/organize/failure', { 
-                    state: { 
+                  navigate('/organize/failure', {
+                    state: {
                       response: {
                         success: false,
                         movedCount: 0,
                         failedCount: 1,
-                        errors: [{ fileName: 'System Error', reason: 'Failed to communicate with execution service.' }],
+                        errors: [
+                          {
+                            fileName: 'System Error',
+                            reason: 'Failed to communicate with execution service.'
+                          }
+                        ],
                         beforeSnapshot: {},
                         afterSnapshot: {}
-                      } 
-                    } 
+                      }
+                    }
                   })
                 } finally {
                   setIsExecuting(false)
@@ -398,9 +403,25 @@ export default function PreviewScreen(): React.JSX.Element {
             >
               {isExecuting ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
                   </svg>
                   Organizing...
                 </>
