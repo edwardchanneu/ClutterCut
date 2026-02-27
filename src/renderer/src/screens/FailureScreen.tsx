@@ -112,27 +112,6 @@ export default function FailureScreen(): React.JSX.Element {
             </div>
           )}
 
-          {response?.successes && response.successes.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-green-500" />
-                Successful Moves
-              </h2>
-              <ul className="space-y-3">
-                {response.successes.map((success, idx) => (
-                  <li
-                    key={`success-${idx}`}
-                    className="bg-white p-4 rounded-lg border border-green-100 shadow-sm flex flex-col gap-1.5"
-                  >
-                    <span className="font-mono text-sm text-gray-800">{success.fileName}</span>
-                    <div className="bg-green-50 p-2.5 rounded border border-green-100 font-mono text-[11px] text-green-800 break-all">
-                      <span className="font-semibold text-green-900">Destination:</span> {success.destination}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
         <div className="p-4 border-t border-gray-100 bg-white shrink-0">
           <button
