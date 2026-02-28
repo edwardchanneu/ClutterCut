@@ -7,6 +7,8 @@ import OrganizeScreen from './screens/OrganizeScreen'
 import PreviewScreen from './screens/PreviewScreen'
 import RulesScreen from './screens/RulesScreen'
 import SignUpScreen from './screens/SignUpScreen'
+import SuccessScreen from './screens/SuccessScreen'
+import FailureScreen from './screens/FailureScreen'
 import { useAuth } from './hooks/useAuth'
 
 export function AppRoutes(): React.JSX.Element {
@@ -44,6 +46,8 @@ export function AppRoutes(): React.JSX.Element {
       />
       <Route path="/organize/rules" element={<RulesScreen />} />
       <Route path="/organize/preview" element={<PreviewScreen />} />
+      <Route path="/organize/success" element={<SuccessScreen />} />
+      <Route path="/organize/failure" element={<FailureScreen />} />
       {/* Catch-all: redirect to organize if session exists, else login */}
       <Route path="*" element={<Navigate to={session ? '/organize' : '/login'} replace />} />
     </Routes>
