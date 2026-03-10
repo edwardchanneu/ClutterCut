@@ -368,7 +368,7 @@ export default function PreviewScreen(): React.JSX.Element {
                   // Request main process to execute the move
                   const response = await window.api.executeRules(req)
 
-                  if (response.movedCount > 0) {
+                  if (response.success && response.failedCount === 0) {
                     navigate('/organize/success', { state: { response } })
                   } else {
                     navigate('/organize/failure', { state: { response } })

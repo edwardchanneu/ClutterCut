@@ -1,7 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { ExecuteRulesResponse } from '../../../shared/ipcChannels'
 import { useAuth } from '../hooks/useAuth'
-import { formatErrorMessage } from '../utils/formatErrorMessage'
 
 interface LocationState {
   response?: ExecuteRulesResponse
@@ -14,20 +13,13 @@ export default function SuccessScreen(): React.JSX.Element {
   const state = (location.state as LocationState | null) ?? {}
   const response = state.response
 
-  const isPartialSuccess = response && !response.success && response.movedCount > 0
-
   // Extract successful moves from the afterSnapshot
   const successfulMoves: Record<string, string[]> = {}
-  console.log('--- DEBUG ---')
-  console.log('response.afterSnapshot:', JSON.stringify(response?.afterSnapshot, null, 2))
-
   if (response?.afterSnapshot) {
-    // The snapshot is keyed by root folder. We just grab the first (and only) root.
     const roots = Object.values(response.afterSnapshot)
     if (roots.length > 0) {
       const topLevelItems = roots[0]
       for (const item of topLevelItems) {
-        // If an item is an object, it represents a ClutterCut-touched folder
         if (typeof item === 'object' && item !== null) {
           const folderName = Object.keys(item)[0]
           const filesInFolder = item[folderName]
@@ -39,73 +31,31 @@ export default function SuccessScreen(): React.JSX.Element {
     }
   }
 
-  console.log('extracted successfulMoves:', successfulMoves)
-  console.log('-------------')
-
   const hasSuccessfulMoves = Object.keys(successfulMoves).length > 0
 
   return (
     <div className="flex flex-col h-screen bg-[#F8FAFB] p-6">
       <div className="max-w-3xl mx-auto w-full flex flex-col h-full bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Header Section */}
-        <div
-          className={`p-8 border-b border-gray-100 text-center shrink-0 ${isPartialSuccess ? 'bg-orange-50/30' : 'bg-green-50/30'}`}
-        >
-          <div
-            className={`w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 ${
-              isPartialSuccess ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'
-            }`}
-          >
-            {isPartialSuccess ? (
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
-                <path d="M12 9v4" />
-                <path d="M12 17h.01" />
-              </svg>
-            ) : (
-              <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 6 9 17l-5-5" />
-              </svg>
-            )}
+        <div className="p-8 border-b border-gray-100 text-center shrink-0 bg-green-50/30">
+          <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100 text-green-600">
+            <svg
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M20 6 9 17l-5-5" />
+            </svg>
           </div>
-          <h1
-            className={`text-2xl font-bold mb-2 ${
-              isPartialSuccess ? 'text-orange-600' : 'text-green-700'
-            }`}
-          >
-            {isPartialSuccess ? 'Partial Success' : 'Success!'}
-          </h1>
-          <p className={`text-sm ${isPartialSuccess ? 'text-orange-600/80' : 'text-green-600/80'}`}>
+          <h1 className="text-2xl font-bold mb-2 text-green-700">Success!</h1>
+          <p className="text-sm text-green-600/80">
             Successfully organized{' '}
-            <strong className={isPartialSuccess ? 'text-orange-700' : 'text-green-700'}>
-              {response?.movedCount ?? 0}
-            </strong>{' '}
-            files
-            {isPartialSuccess && (
-              <>
-                {', '}but <strong className="text-red-600">{response?.failedCount ?? 0}</strong>{' '}
-                failed.
-              </>
-            )}
-            {!isPartialSuccess && '.'}
+            <strong className="text-green-700">{response?.movedCount ?? 0}</strong> files.
           </p>
         </div>
 
@@ -149,28 +99,6 @@ export default function SuccessScreen(): React.JSX.Element {
               </div>
             </div>
           )}
-
-          {isPartialSuccess && response?.errors && response.errors.length > 0 && (
-            <div>
-              <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-red-500" />
-                Failed Moves
-              </h2>
-              <ul className="space-y-3">
-                {response.errors.map((err, idx) => (
-                  <li
-                    key={idx}
-                    className="bg-white p-4 rounded-lg border border-red-100 shadow-sm flex flex-col gap-1"
-                  >
-                    <span className="font-mono text-sm text-gray-800 break-all">
-                      {err.fileName}
-                    </span>
-                    <div className="text-xs text-red-500">{formatErrorMessage(err.reason)}</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
         </div>
 
         {/* Footer Actions */}
@@ -187,7 +115,7 @@ export default function SuccessScreen(): React.JSX.Element {
             onClick={() => navigate('/organize')}
             className="flex-1 px-5 py-3 rounded-xl bg-[#0A0A0A] text-white text-sm font-semibold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-opacity"
           >
-            {isPartialSuccess ? 'Acknowledge & Return' : 'Organize More Files'}
+            Organize More Files
           </button>
         </div>
       </div>
