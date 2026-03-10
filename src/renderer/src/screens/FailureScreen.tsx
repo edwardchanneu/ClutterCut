@@ -1,62 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { ExecuteRulesResponse } from '../../../shared/ipcChannels'
+import { formatErrorMessage } from '../utils/formatErrorMessage'
 
 interface LocationState {
   response?: ExecuteRulesResponse
-}
-
-function formatErrorMessage(rawError: string): React.ReactNode {
-  let friendlyMessage = rawError
-
-  if (rawError.includes('EACCES: permission denied') || rawError.includes('EPERM')) {
-    friendlyMessage = 'Permission denied. The file or destination folder might be read-only.'
-  } else if (rawError.includes('ENOENT: no such file or directory')) {
-    friendlyMessage = 'File or destination folder could not be found.'
-  } else if (rawError.includes('ENOSPC: no space left on device')) {
-    friendlyMessage = 'Not enough disk space to move this file.'
-  } else if (rawError.includes('EBUSY: resource busy or locked')) {
-    friendlyMessage = 'The file is currently being used by another program.'
-  }
-
-  // Extract paths from raw node rename error: "rename '/path/to/src' -> '/path/to/dest'"
-  const renameMatch = rawError.match(/rename '(.*?)' -> '(.*?)'/)
-
-  // Extract path from single path operations: "mkdir '/path/to/dest'", "scandir '/path'", etc.
-  const singlePathMatch = rawError.match(/(?:mkdir|scandir|stat|access|open|read) '(.*?)'/)
-
-  if (renameMatch) {
-    const src = renameMatch[1]
-    const dest = renameMatch[2]
-    return (
-      <div className="flex flex-col gap-1.5 mt-1">
-        <span>{friendlyMessage}</span>
-        <div className="bg-red-50 p-2.5 rounded border border-red-100 mt-1 font-mono text-[11px] text-red-800 break-all space-y-1">
-          <div>
-            <span className="font-semibold text-red-900">Original:</span> {src}
-          </div>
-          <div>
-            <span className="font-semibold text-red-900">Destination:</span> {dest}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (singlePathMatch) {
-    const targetPath = singlePathMatch[1]
-    return (
-      <div className="flex flex-col gap-1.5 mt-1">
-        <span>{friendlyMessage}</span>
-        <div className="bg-red-50 p-2.5 rounded border border-red-100 mt-1 font-mono text-[11px] text-red-800 break-all space-y-1">
-          <div>
-            <span className="font-semibold text-red-900">Target Path:</span> {targetPath}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  return <span>{friendlyMessage}</span>
 }
 
 export default function FailureScreen(): React.JSX.Element {
@@ -85,10 +32,10 @@ export default function FailureScreen(): React.JSX.Element {
               <path d="M12 17h.01" />
             </svg>
           </div>
-          <h1 className="text-xl font-bold text-red-700 mb-1">Partial Success</h1>
+          <h1 className="text-xl font-bold text-red-700 mb-1">Organization Failed</h1>
           <p className="text-sm text-red-600/80">
-            Moved <strong className="text-red-700">{response?.movedCount ?? 0}</strong> files, but{' '}
-            <strong className="text-red-700">{response?.failedCount ?? 0}</strong> failed.
+            <strong className="text-red-700">{response?.failedCount ?? 0}</strong> files failed to
+            move. No files were organized.
           </p>
         </div>
         <div className="flex-1 overflow-y-auto p-6 bg-gray-50 space-y-6">
@@ -111,7 +58,6 @@ export default function FailureScreen(): React.JSX.Element {
               </ul>
             </div>
           )}
-
         </div>
         <div className="p-4 border-t border-gray-100 bg-white shrink-0">
           <button
