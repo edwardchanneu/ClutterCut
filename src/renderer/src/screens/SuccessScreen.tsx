@@ -1,11 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import type { ExecuteRulesResponse, ReadFolderEntry } from '../../../shared/ipcChannels'
+import type { ExecuteRulesResponse } from '../../../shared/ipcChannels'
 import { useAuth } from '../hooks/useAuth'
 
 interface LocationState {
   response?: ExecuteRulesResponse
-  folderPath?: string
-  originalFiles?: ReadFolderEntry[]
 }
 
 export default function SuccessScreen(): React.JSX.Element {
@@ -32,27 +30,6 @@ export default function SuccessScreen(): React.JSX.Element {
       }
     }
   }
-
-  const updatedFiles = (() => {
-    if (!state.originalFiles || !response?.afterSnapshot) return undefined
-    const nextFiles: ReadFolderEntry[] = []
-    const snapshotItems = response.afterSnapshot[state.folderPath || ''] || []
-
-    for (const item of snapshotItems) {
-      if (typeof item === 'string') {
-        const orig = state.originalFiles.find((f) => f.name === item)
-        if (orig) {
-          nextFiles.push(orig)
-        } else {
-          nextFiles.push({ name: item, isFile: true })
-        }
-      } else if (typeof item === 'object' && item !== null) {
-        const folderName = Object.keys(item)[0]
-        nextFiles.push({ name: folderName, isFile: false })
-      }
-    }
-    return nextFiles
-  })()
 
   const hasSuccessfulMoves = Object.keys(successfulMoves).length > 0
 
@@ -135,11 +112,7 @@ export default function SuccessScreen(): React.JSX.Element {
             </button>
           )}
           <button
-            onClick={() =>
-              navigate('/organize', {
-                state: { folderPath: state.folderPath, files: updatedFiles }
-              })
-            }
+            onClick={() => navigate('/organize')}
             className="flex-1 px-5 py-3 rounded-xl bg-[#0A0A0A] text-white text-sm font-semibold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-opacity"
           >
             Organize More Files

@@ -105,23 +105,20 @@ export async function executeRules(req: ExecuteRulesRequest): Promise<ExecuteRul
       }
     }
 
-    // 2. Generate after-snapshot using already read data
+    // 2. Generate after-snapshot
+    // Read the folder again to get actual untouched directory names
+    const finalEntries = await fs.readdir(folderPath, { withFileTypes: true })
     const afterList: (string | Record<string, string[]>)[] = []
 
-    for (const name of allNames) {
-      if (destinationMap.has(name)) {
-        // Pre-existing directory that we modified
-        afterList.push({ [name]: destinationMap.get(name)! })
-      } else if (unmodifiedItems.has(name)) {
-        // Untouched subdirectory or file
-        afterList.push(name)
-      }
-    }
+    for (const entry of finalEntries) {
+      if (entry.name.startsWith('.')) continue
 
-    // Add completely new directories that were created during execution
-    for (const dir of destinationMap.keys()) {
-      if (!allNames.includes(dir)) {
-        afterList.push({ [dir]: destinationMap.get(dir)! })
+      if (entry.isDirectory() && destinationMap.has(entry.name)) {
+        // ClutterCut-touched folder
+        afterList.push({ [entry.name]: destinationMap.get(entry.name)! })
+      } else {
+        // Untouched subdirectory or file
+        afterList.push(entry.name)
       }
     }
 

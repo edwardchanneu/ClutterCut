@@ -368,12 +368,10 @@ export default function PreviewScreen(): React.JSX.Element {
                   // Request main process to execute the move
                   const response = await window.api.executeRules(req)
 
-                  const nextState = { response, folderPath, originalFiles: files }
-
                   if (response.success && response.failedCount === 0) {
-                    navigate('/organize/success', { state: nextState })
+                    navigate('/organize/success', { state: { response } })
                   } else {
-                    navigate('/organize/failure', { state: nextState })
+                    navigate('/organize/failure', { state: { response } })
                   }
                 } catch (err) {
                   console.error('Execution Failed:', err)
