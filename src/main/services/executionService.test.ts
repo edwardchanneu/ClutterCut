@@ -41,12 +41,9 @@ describe('executionService', () => {
       { name: '.hidden', isFile: () => true, isDirectory: () => false }
     ]
 
-    vi.mocked(fs.readdir)
-      .mockResolvedValueOnce(mockEntries as unknown as Awaited<ReturnType<typeof fs.readdir>>)
-      .mockResolvedValueOnce([
-        { name: 'random.txt', isFile: () => true, isDirectory: () => false },
-        { name: 'Documents', isFile: () => false, isDirectory: () => true }
-      ] as unknown as Awaited<ReturnType<typeof fs.readdir>>)
+    vi.mocked(fs.readdir).mockResolvedValueOnce(
+      mockEntries as unknown as Awaited<ReturnType<typeof fs.readdir>>
+    )
 
     vi.mocked(fs.mkdir).mockResolvedValue(undefined as unknown as string)
     vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'))
@@ -76,11 +73,9 @@ describe('executionService', () => {
   it('resolves filename conflicts by appending numeric suffixes', async () => {
     // Both files match '.pdf'
     const mockEntries = [{ name: 'duplicate.pdf', isFile: () => true, isDirectory: () => false }]
-    vi.mocked(fs.readdir)
-      .mockResolvedValueOnce(mockEntries as unknown as Awaited<ReturnType<typeof fs.readdir>>)
-      .mockResolvedValueOnce([
-        { name: 'Documents', isFile: () => false, isDirectory: () => true }
-      ] as unknown as Awaited<ReturnType<typeof fs.readdir>>)
+    vi.mocked(fs.readdir).mockResolvedValueOnce(
+      mockEntries as unknown as Awaited<ReturnType<typeof fs.readdir>>
+    )
     vi.mocked(fs.mkdir).mockResolvedValue(undefined as unknown as string)
 
     // First access succeeds (file exists), second fails (name available)

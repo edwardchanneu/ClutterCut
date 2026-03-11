@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { signOut } from '../lib/auth'
 import { useFolderSelection } from '../hooks/useFolderSelection'
 import { useGuest } from '../context/GuestContext'
 import { useAuth } from '../hooks/useAuth'
+import type { ReadFolderEntry } from '../../../shared/ipcChannels'
 
 export default function OrganizeScreen(): React.JSX.Element {
   const navigate = useNavigate()
@@ -11,7 +12,13 @@ export default function OrganizeScreen(): React.JSX.Element {
   const { session } = useAuth()
   const [signingOut, setSigningOut] = useState(false)
   const [signOutError, setSignOutError] = useState('')
-  const { folderPath, files, isLoading, error, selectFolder } = useFolderSelection()
+  const location = useLocation()
+  const state = (location.state as { folderPath?: string; files?: ReadFolderEntry[] } | null) ?? {}
+
+  const { folderPath, files, isLoading, error, selectFolder } = useFolderSelection({
+    initialFolderPath: state.folderPath,
+    initialFiles: state.files
+  })
 
   // Determine actual guest status: if they have a real session, they are NOT a guest, even if isGuest=true was stuck in state
   const isEffectivelyGuest = isGuest && !session

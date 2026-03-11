@@ -9,6 +9,11 @@ interface UseFolderSelectionReturn {
   selectFolder: () => Promise<void>
 }
 
+interface UseFolderSelectionOptions {
+  initialFolderPath?: string | null
+  initialFiles?: ReadFolderEntry[]
+}
+
 /**
  * Handles the folder selection flow:
  *   1. Opens the native OS folder picker via IPC
@@ -16,9 +21,9 @@ interface UseFolderSelectionReturn {
  *
  * Never accesses fs directly — all file system work is delegated to the main process.
  */
-export function useFolderSelection(): UseFolderSelectionReturn {
-  const [folderPath, setFolderPath] = useState<string | null>(null)
-  const [files, setFiles] = useState<ReadFolderEntry[]>([])
+export function useFolderSelection(options?: UseFolderSelectionOptions): UseFolderSelectionReturn {
+  const [folderPath, setFolderPath] = useState<string | null>(options?.initialFolderPath ?? null)
+  const [files, setFiles] = useState<ReadFolderEntry[]>(options?.initialFiles ?? [])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
