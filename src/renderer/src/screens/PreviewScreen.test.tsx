@@ -173,7 +173,6 @@ describe('PreviewScreen Layout Update', () => {
       expect(mockNavigate).toHaveBeenCalledWith('/organize')
     })
   })
-
   it('calls executeRules and navigates to success screen on Approval', async () => {
     const user = userEvent.setup()
 

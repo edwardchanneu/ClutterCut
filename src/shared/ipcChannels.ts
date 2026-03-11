@@ -61,7 +61,6 @@ export interface ReadFolderResponse {
    */
   error: string | null
 }
-
 // ---------------------------------------------------------------------------
 // EXECUTE_RULES
 // Renderer sends a target folder and user-defined rules.
