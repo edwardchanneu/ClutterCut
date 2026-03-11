@@ -1,5 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import type { ExecuteRulesResponse } from '../../../shared/ipcChannels'
+import { useAuth } from '../hooks/useAuth'
 
 interface LocationState {
   response?: ExecuteRulesResponse
@@ -8,6 +9,7 @@ interface LocationState {
 export default function SuccessScreen(): React.JSX.Element {
   const navigate = useNavigate()
   const location = useLocation()
+  const { session } = useAuth()
   const state = (location.state as LocationState | null) ?? {}
   const response = state.response
 
@@ -33,12 +35,23 @@ export default function SuccessScreen(): React.JSX.Element {
           Successfully organized{' '}
           <strong className="text-primary">{response?.movedCount ?? 0}</strong> files.
         </p>
-        <button
-          onClick={() => navigate('/organize')}
-          className="w-full px-5 py-3 rounded-xl bg-[#0A0A0A] text-white text-sm font-semibold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-opacity"
-        >
-          Organize More Files
-        </button>
+        <div className="flex flex-col gap-3">
+          <button
+            onClick={() => navigate('/organize')}
+            className="w-full px-5 py-3 rounded-xl bg-[#0A0A0A] text-white text-sm font-semibold hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-opacity"
+          >
+            Organize More Files
+          </button>
+
+          {session && (
+            <button
+              onClick={() => navigate('/history')}
+              className="w-full px-5 py-3 rounded-xl bg-white text-primary border border-gray-200 text-sm font-semibold hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary transition-colors"
+            >
+              View History
+            </button>
+          )}
+        </div>
       </div>
     </div>
   )
