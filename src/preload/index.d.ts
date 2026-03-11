@@ -2,7 +2,9 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 import type {
   SelectFolderResponse,
   ReadFolderRequest,
-  ReadFolderResponse
+  ReadFolderResponse,
+  ExecuteRulesRequest,
+  ExecuteRulesResponse
 } from '../shared/ipcChannels'
 
 declare global {
@@ -11,6 +13,7 @@ declare global {
     api: {
       selectFolder: () => Promise<SelectFolderResponse>
       readFolder: (req: ReadFolderRequest) => Promise<ReadFolderResponse>
+      executeRules: (req: ExecuteRulesRequest) => Promise<ExecuteRulesResponse>
     }
   }
 }
