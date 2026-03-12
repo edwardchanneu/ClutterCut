@@ -127,8 +127,8 @@ describe('HistoryScreen', () => {
     expect(screen.getByText('/Users/test/Desktop')).toBeInTheDocument()
 
     // File counts
-    expect(screen.getByText('5 file(s) affected')).toBeInTheDocument()
-    expect(screen.getByText('12 file(s) affected')).toBeInTheDocument()
+    expect(screen.getByText('5 files affected')).toBeInTheDocument()
+    expect(screen.getByText('12 files affected')).toBeInTheDocument()
 
     // Undone badge and pending sync badge for run 2
     expect(screen.getByText('Undone')).toBeInTheDocument()
@@ -164,7 +164,7 @@ describe('HistoryScreen', () => {
     expect(screen.queryByText(/Rules Applied/i)).not.toBeInTheDocument()
 
     // Click to expand
-    fireEvent.click(screen.getByText('/Users/test/Downloads'))
+    fireEvent.click(screen.getByRole('button', { name: 'Expand details' }))
 
     // Should be expanded: Rules and snapshots should be visible
     expect(screen.getByText(/Rules Applied/i)).toBeInTheDocument()
@@ -172,7 +172,7 @@ describe('HistoryScreen', () => {
     expect(screen.getAllByText(/Docs/i).length).toBeGreaterThan(0) // Dest folder in rules and JSON
 
     // Click again to collapse
-    fireEvent.click(screen.getByText('/Users/test/Downloads'))
+    fireEvent.click(screen.getByRole('button', { name: 'Collapse details' }))
     expect(screen.queryByText(/Rules Applied/i)).not.toBeInTheDocument()
   })
 })
