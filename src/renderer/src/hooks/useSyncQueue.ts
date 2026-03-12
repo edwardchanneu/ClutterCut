@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 
 export function useSyncQueue(): { isSyncing: boolean } {
   const [isSyncing, setIsSyncing] = useState(false)
+  const isSyncingRef = useRef(false)
 
   useEffect(() => {
     const syncRuns = async (): Promise<void> => {
-      if (!navigator.onLine || isSyncing) return
+      if (!navigator.onLine || isSyncingRef.current) return
 
+      isSyncingRef.current = true
       setIsSyncing(true)
       try {
         const { success, runs, error } = await window.api.getOfflineRuns()
@@ -32,6 +34,7 @@ export function useSyncQueue(): { isSyncing: boolean } {
       } catch (err) {
         console.error('Error during queue sync:', err)
       } finally {
+        isSyncingRef.current = false
         setIsSyncing(false)
       }
     }
@@ -44,7 +47,7 @@ export function useSyncQueue(): { isSyncing: boolean } {
     return () => {
       window.removeEventListener('online', syncRuns)
     }
-  }, [isSyncing])
+  }, [])
 
   return { isSyncing }
 }
