@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import type { ReadFolderEntry } from '../../../shared/ipcChannels'
 import { RuleRow, computeFileMatch, ruleColour } from '../lib/ruleMatch'
+import { useAuth } from '../hooks/useAuth'
+import { useSaveRun } from '../hooks/useSaveRun'
 
 interface LocationState {
   folderPath?: string
@@ -17,6 +19,9 @@ export default function PreviewScreen(): React.JSX.Element {
   const folderPath = state.folderPath ?? null
   const files = state.files ?? []
   const rows = state.rows ?? []
+
+  const { session } = useAuth()
+  const { saveRun } = useSaveRun()
 
   const [isExecuting, setIsExecuting] = useState(false)
 
@@ -369,6 +374,20 @@ export default function PreviewScreen(): React.JSX.Element {
                   const response = await window.api.executeRules(req)
 
                   if (response.success && response.failedCount === 0) {
+                    if (session) {
+                      try {
+                        await saveRun(
+                          session.user.id,
+                          folderPath,
+                          req.rules,
+                          response.beforeSnapshot,
+                          response.afterSnapshot,
+                          response.movedCount
+                        )
+                      } catch (err) {
+                        console.error('Failed to log run history', err)
+                      }
+                    }
                     navigate('/organize/success', { state: { response } })
                   } else {
                     navigate('/organize/failure', { state: { response } })

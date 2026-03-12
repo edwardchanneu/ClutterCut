@@ -4,6 +4,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerFolderHandlers } from './ipc/folderHandlers'
 import { registerExecutionHandlers } from './ipc/executionHandlers'
+import { registerQueueHandlers } from './ipc/queueHandlers'
 
 function createWindow(): void {
   // Create the browser window.
@@ -56,6 +57,7 @@ app.whenReady().then(() => {
 
   registerFolderHandlers()
   registerExecutionHandlers()
+  registerQueueHandlers()
 
   createWindow()
 
