@@ -8,6 +8,15 @@ An Electron application with React and TypeScript
 
 - [VSCode](https://code.visualstudio.com/) + [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint) + [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
 
+## Documentation
+
+- [API Documentation](docs/api.md)
+- [Technical Blog Post](docs/blog_post.md)
+- [AI Mastery](docs/ai_mastery.md)
+- [User Stories & Acceptance Criteria](docs/agile/user_stories.md)
+- [Sprint 1 Planning](docs/agile/sprint_1_plan.md) | [Sprint 1 Retro](docs/agile/sprint_1_retro.md)
+- [Sprint 2 Planning](docs/agile/sprint_2_plan.md) | [Sprint 2 Retro](docs/agile/sprint_2_retro.md)
+
 ## Project Setup
 
 ### Install
