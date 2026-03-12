@@ -37,23 +37,23 @@ Each rule specifies a destination folder name. Rules are evaluated top-to-bottom
 
 The preview screen is the product's primary trust mechanism. Before a single file moves, the user sees every planned operation grouped by destination folder, with a total file count and the option to navigate back and revise rules without losing their configuration. Nothing happens until the user explicitly clicks "Approve & Organize."
 
-The undo system records every run in Supabase's `organization_runs` table, which stores the rules array as JSONB, both snapshots, and metadata including `undone`, `is_undo`, and `parent_run_id`. That last field enables undo-of-undo: an undo operation creates a new history entry referencing the original run, which can itself be undone to re-apply the original organization. Row Level Security on the Supabase table ensures users can only access their own records.
+The undo system records every run in Supabase's `organization_runs` table, which stores the rules array as JSONB, both snapshots, and metadata including `undone`, `is_undo`, and `parent_run_id`. This explicit linking perfectly maps each undo back to its source operation. Row Level Security on the Supabase table ensures users can only access their own records.
 
 For offline support, authenticated users who lose connectivity can still run the full organize flow. Completed runs are serialized to a JSON queue file in Electron's `userData` directory, surviving app restarts, and synced to Supabase automatically when connectivity is restored. The UI shows a persistent offline indicator and marks pending-sync runs in the history list until the sync is confirmed.
 
 ## Engineering With AI: What Actually Happened
 
-We used Claude throughout the project for drafting the PRD, generating GitHub Issues, building a rules/instructions file for our AI coding assistant, and for implementation itself. The experience clarified some things about AI-assisted development that aren't obvious until you've run into the failure modes directly. The most important artifact we produced was not a feature. It was a rules file.
+We used Claude throughout the project for drafting the PRD, generating GitHub Issues, building an `.antigravityrules` file for our AI coding assistant, and for implementation itself. The experience clarified some things about AI-assisted development that aren't obvious until you've run into the failure modes directly. The most important artifact we produced was not a feature. It was a rules file.
 
 Early on, when we prompted our coding assistant without additional context, it generated working code that was wrong for our use case. The login screen came back with dark Electron-style components that were technically functional, but completely misaligned with our Figma wireframes and the design language we had established in the PRD. The AI had no way to know what our product was supposed to look like, so it defaulted to its own assumptions about what an Electron app should look like.
 
-The rules file changed this. It encoded our design constraints, component naming conventions, testing expectations, import path conventions, and UI framework choices in a form that could be included as persistent context in every code generation session. After adding it, the AI's output matched our wireframes closely enough to use directly. The before-and-after on the login screen implementation is about as clear a demonstration of context engineering as we encountered: same prompt, same model, completely different result.
+The `.antigravityrules` file changed this. It encoded our design constraints, component naming conventions, testing expectations, import path conventions, and UI framework choices in a form that could be included as persistent context in every code generation session. After adding it, the AI's output matched our wireframes closely enough to use directly. The before-and-after on the login screen implementation is about as clear a demonstration of context engineering as we encountered: same prompt, same model, completely different result.
 
-This points to something worth naming directly: AI coding tools are not bad at following instructions, they are bad at inferring unstated ones. The rules file is the equivalent of a style guide and design system for a human developer. It doesn't tell the AI what to build. It tells it how things should look and behave. The PRD provides the why. The rules file provides the how. Together, they close the gap between product vision and code output in a way that neither document does alone.
+This points to something worth naming directly: AI coding tools are not bad at following instructions, they are bad at inferring unstated ones. The `.antigravityrules` file is the equivalent of a style guide and design system for a human developer. It doesn't tell the AI what to build. It tells it how things should look and behave. The PRD provides the why. The rules file provides the how. Together, they close the gap between product vision and code output in a way that neither document does alone.
 
 The GitHub Issues setup reinforced this pattern. We used Claude to generate well-scoped issues grounded in the PRD, each with explicit, testable acceptance criteria. The narrower the scope of a prompt, the more reliable the output. When we pointed the AI at a single, well-defined issue with clear criteria it could treat as a checklist, the output was far more usable than when we gave it a broader and more open-ended request. The issues also created a shared paper trail that kept both of us aligned on what had been generated, what had been accepted, and what still needed revision.
 
-One concrete failure we hit: generated test files would throw errors on `.toBeInTheDocument()` matchers and component import paths, even when the underlying logic was correct. These are environment-specific constraints the AI simply doesn't know about unless they're provided. We added a testing section to the rules file specifying the exact library setup and import path conventions, after that, generated test files were compatible out of the box. The lesson here is that the rules file needs to be treated as a living document, updated continuously as new environment-specific constraints are discovered, rather than written once and forgotten.
+One concrete failure we hit: generated test files would throw errors on `.toBeInTheDocument()` matchers and component import paths, even when the underlying logic was correct. These are environment-specific constraints the AI simply doesn't know about unless they're provided. We added a testing section to the `.antigravityrules` file specifying the exact library setup and import path conventions, after that, generated test files were compatible out of the box. The lesson here is that the rules file needs to be treated as a living document, updated continuously as new environment-specific constraints are discovered, rather than written once and forgotten.
 
 ## Testing and CI/CD
 
@@ -65,9 +65,9 @@ The GitHub Actions CI pipeline runs linting, unit tests, and an Electron build c
 
 There are three things we'd change with another pass.
 
-First, invest in the rules file from the start rather than building it reactively. We wrote it after already seeing what the AI produced without it. Starting with a thorough rules file would have saved revision time on the first several issues and established better habits earlier in the project.
+First, invest in the `.antigravityrules` file from the start rather than building it reactively. We wrote it after already seeing what the AI produced without it. Starting with a thorough rules file would have saved revision time on the first several issues and established better habits earlier in the project.
 
-Second, add a structured retrospective after every closed issue, just a few sentences documenting what the AI got right, what required manual revision, and whether the rules file needs updating. Treating it as a continuous feedback loop rather than a one-time setup would make the system compound in value over time.
+Second, add a structured retrospective after every closed issue, just a few sentences documenting what the AI got right, what required manual revision, and whether the `.antigravityrules` file needs updating. Treating it as a continuous feedback loop rather than a one-time setup would make the system compound in value over time.
 
 Third, establish a consistent acceptance criteria format earlier. Some of our early issues were written at a level of abstraction that made it hard to determine when they were truly done. Explicit, testable criteria in a predictable format, something the AI could parse and use as a definition of success, significantly improved output quality once we adopted it consistently.
 
@@ -75,7 +75,7 @@ Third, establish a consistent acceptance criteria format earlier. Some of our ea
 
 ClutterCut is a bet that transparency and reversibility are the features that actually determine whether someone will trust and adopt an automated tool. The preview screen and the undo system aren't layers added on top of the core product, they are the core product. Everything else exists in service of the central finding from our user research: people don't distrust automation because it's powerful. They distrust it because they can't see what it's doing and can't undo it when it goes wrong.
 
-Building it with heavy AI assistance was itself an exercise in the same principle. AI is a powerful tool. The rules file, the scoped issues, and the structured criteria are the transparency layer that makes it reliable.
+Building it with heavy AI assistance was itself an exercise in the same principle. AI is a powerful tool. The `.antigravityrules` file, the scoped issues, and the structured criteria are the transparency layer that makes it reliable.
 
 That symmetry feels like the right place to end.
 

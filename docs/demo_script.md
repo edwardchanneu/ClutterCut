@@ -59,9 +59,25 @@
     *   "...and it puts them *exactly* back where it found them."
 
 *   **Undo as a New Entry**
-    *   "And you'll notice in the History screen, that Undo operation was just logged as a *new* event. Because of our architecture, we can actually Undo an Undo, reapplying the organization."
+    *   "And you'll notice in the History screen, that the Undo operation was just logged as a *new* event, perfectly maintaining the audit trail."
 
-## Part 5: Offline Mode & Conclusion (1 min)
+## Part 5: Building It — Sprints & AI (2 mins)
+
+**(Speaker: Edward)**
+
+*   **The 3-Sprint Agile Process**
+    *   "To actually build this, we treated it like a real product. We worked in strict 1-week Agile Sprints—three in total."
+    *   "Sprint 1 was the foundation: Electron, UI Shell, CI/CD, and Supabase Auth."
+    *   "Sprint 2 was the core logic: the Rules Engine, native folder selection, and the Preview screen."
+    *   "And Sprint 3 tied it all together with Execution, the History view, and the Undo system."
+
+*   **Engineering & The Rules File**
+    *   "Because we were splitting the work across the stack, we realized quickly that two separate developers can easily end up writing two completely different codebases."
+    *   "To solve this, we created a shared `.antigravityrules` file. It was our source of truth."
+    *   "This file detailed exactly how we wanted code written: It contained our specific folder structure conventions, the exact UI component libraries to use, requirements for isolating the Electron IPC channels, and our standard syntax for writing Playwright E2E tests."
+    *   "Sticking relentlessly to this shared architecture document is why our component library and backend services feel cohesive, rather than pieced together."
+
+## Part 6: Offline Mode & Conclusion (1 min)
 
 **(Speaker: Heather)**
 
