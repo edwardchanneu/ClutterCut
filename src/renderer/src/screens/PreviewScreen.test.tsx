@@ -317,6 +317,51 @@ describe('PreviewScreen Layout Update', () => {
     await user.click(executeBtn)
 
     await waitFor(() => {
+      // No files moved, so no history entry should be created
+      expect(mockSaveRun).not.toHaveBeenCalled()
+      expect(mockNavigate).toHaveBeenCalledWith('/organize/failure', expect.anything())
+    })
+  })
+
+  it('saves history entry and navigates to failure screen on partial success', async () => {
+    const user = userEvent.setup()
+
+    vi.mocked(window.api.executeRules).mockResolvedValueOnce({
+      success: false,
+      movedCount: 1,
+      failedCount: 1,
+      errors: [{ fileName: 'report.pdf', reason: 'EPERM: permission denied' }],
+      beforeSnapshot: { '/test/folder': ['report.pdf', 'photo.jpg'] },
+      afterSnapshot: { '/test/folder': [{ Images: ['photo.jpg'] }, 'report.pdf'] }
+    } as unknown as ExecuteRulesResponse)
+
+    const mockState = { folderPath: '/test/folder', files: dummyFiles, rows: dummyRows }
+    mockLocationState = mockState
+
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/preview', state: mockState }]}>
+        <Routes>
+          <Route path="/preview" element={<PreviewScreen />} />
+          <Route path="/organize/failure" element={<div data-testid="failure-screen" />} />
+        </Routes>
+      </MemoryRouter>
+    )
+
+    const executeBtn = screen.getByRole('button', { name: /Approve and organize files/i })
+    await waitFor(() => expect(executeBtn).not.toBeDisabled())
+    await user.click(executeBtn)
+
+    await waitFor(() => {
+      // Some files were moved, so a history entry must be created for undo
+      expect(mockSaveRun).toHaveBeenCalledWith(
+        'test-user-123',
+        '/test/folder',
+        expect.any(Array),
+        { '/test/folder': ['report.pdf', 'photo.jpg'] },
+        { '/test/folder': [{ Images: ['photo.jpg'] }, 'report.pdf'] },
+        1
+      )
+      // Despite partial success, navigation goes to failure screen
       expect(mockNavigate).toHaveBeenCalledWith('/organize/failure', expect.anything())
     })
   })

@@ -146,6 +146,11 @@ export function HistoryEntry({
               {run.files_affected} file{run.files_affected !== 1 ? 's' : ''} affected
             </span>
 
+            {run.is_undo && (
+              <span className="px-2 py-0.5 bg-purple-50 text-purple-600 border border-purple-100 text-xs rounded-full font-bold ml-2 shrink-0">
+                Undo Run
+              </span>
+            )}
             {run.undone && (
               <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full font-bold ml-2 shrink-0">
                 Undone
@@ -161,32 +166,34 @@ export function HistoryEntry({
 
         {/* Right Side Controls */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Undo Button */}
-          <button
-            type="button"
-            className="h-10 px-4 border border-slate-200 rounded-lg flex items-center gap-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors shadow-sm disabled:opacity-50"
-            disabled={run.undone || run.isPendingSync}
-            onClick={(e) => {
-              e.stopPropagation()
-              setShowConfirmDialog(true)
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Undo Button — hidden for undo-run entries (no redo for MVP) */}
+          {!run.is_undo && !run.undone && (
+            <button
+              type="button"
+              className="h-10 px-4 border border-slate-200 rounded-lg flex items-center gap-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors shadow-sm disabled:opacity-50"
+              disabled={run.isPendingSync}
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowConfirmDialog(true)
+              }}
             >
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
-            Undo
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              Undo
+            </button>
+          )}
 
           {/* Expand Toggle */}
           <button
@@ -300,9 +307,10 @@ export function HistoryEntry({
                 Undo Organization Run?
               </h3>
               <p className="mt-3 text-slate-600">
-                Are you sure you want to undo this run? {run.files_affected} files will be moved
-                back to <strong>{run.folder_path}</strong>. Folders created by this run will remain
-                to ensure no personal data is lost.
+                Are you sure you want to undo this run? {run.files_affected} file
+                {run.files_affected !== 1 ? 's' : ''} will be moved back to{' '}
+                <strong>{run.folder_path}</strong>. Folders created by this run will remain to
+                ensure no personal data is lost.
               </p>
               {error && (
                 <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm font-medium rounded-lg border border-red-100">

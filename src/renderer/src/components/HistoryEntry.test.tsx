@@ -55,14 +55,31 @@ describe('HistoryEntry', () => {
     expect(screen.getByText('pdf')).toBeInTheDocument()
   })
 
-  it('shows badges when run is undone or pending sync', () => {
-    const alteredRun = { ...mockRun, undone: true, isPendingSync: true }
+  it('shows badges and hides undo button when run is undone', () => {
+    const alteredRun = { ...mockRun, undone: true }
     const onToggle = vi.fn()
     render(<HistoryEntry run={alteredRun} isExpanded={false} onToggle={onToggle} />)
 
     expect(screen.getByText('Undone')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Undo$/i })).not.toBeInTheDocument()
+  })
+
+  it('shows Pending Sync badge and disables undo button when isPendingSync', () => {
+    const alteredRun = { ...mockRun, isPendingSync: true }
+    const onToggle = vi.fn()
+    render(<HistoryEntry run={alteredRun} isExpanded={false} onToggle={onToggle} />)
+
     expect(screen.getByText('Pending Sync')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Undo/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /^Undo$/i })).toBeDisabled()
+  })
+
+  it('hides the undo button entirely when run.is_undo is true', () => {
+    const undoRun = { ...mockRun, is_undo: true }
+    const onToggle = vi.fn()
+    render(<HistoryEntry run={undoRun} isExpanded={false} onToggle={onToggle} />)
+
+    expect(screen.getByText('Undo Run')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Undo$/i })).not.toBeInTheDocument()
   })
 })
 

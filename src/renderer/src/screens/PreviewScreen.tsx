@@ -373,21 +373,24 @@ export default function PreviewScreen(): React.JSX.Element {
                   // Request main process to execute the move
                   const response = await window.api.executeRules(req)
 
-                  if (response.success && response.failedCount === 0) {
-                    if (session) {
-                      try {
-                        await saveRun(
-                          session.user.id,
-                          folderPath,
-                          req.rules,
-                          response.beforeSnapshot,
-                          response.afterSnapshot,
-                          response.movedCount
-                        )
-                      } catch (err) {
-                        console.error('Failed to log run history', err)
-                      }
+                  // Save a history entry whenever at least one file was moved (full or partial success),
+                  // so the user can undo manually — per PRD §13 (Don'ts).
+                  if (session && response.movedCount > 0) {
+                    try {
+                      await saveRun(
+                        session.user.id,
+                        folderPath,
+                        req.rules,
+                        response.beforeSnapshot,
+                        response.afterSnapshot,
+                        response.movedCount
+                      )
+                    } catch (err) {
+                      console.error('Failed to log run history', err)
                     }
+                  }
+
+                  if (response.success && response.failedCount === 0) {
                     navigate('/organize/success', { state: { response } })
                   } else {
                     navigate('/organize/failure', { state: { response } })
