@@ -267,7 +267,6 @@ organization_runs
 - Undo does not require re-confirming rules but does require a confirmation dialog ("Are you sure you want to undo this organization run?")
 - After a successful undo, a **new history entry** is created representing the undo operation, with its own before and after snapshots captured at the time of the undo
 - The original run is marked as undone in the history log but is not deleted
-- The undo history entry is itself undoable — the user can undo an undo, which restores files to the state after the original run
 
 ---
 
@@ -361,7 +360,6 @@ organization_runs
 | US-29 | user    | be asked to confirm before an undo is executed                             | I don't accidentally trigger an undo                                   | A confirmation dialog appears before undo executes; the operation only proceeds on explicit confirmation                                                                           |
 | US-30 | user    | see a summary after an undo completes                                      | I know if any files could not be restored                              | Post-undo summary lists successfully restored files and any files that could not be found or restored, with reasons                                                                |
 | US-31 | user    | still see a history entry after it has been undone                         | I have a complete audit trail of all actions including reversals       | Undone runs remain in the history list and are clearly marked as undone                                                                                                            |
-| US-32 | user    | undo an undo operation                                                     | I can re-apply an organization run I reversed by mistake               | An undo history entry has its own Undo button; executing it restores files to the state after the original run and creates a new history entry                                     |
 
 ---
 

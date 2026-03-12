@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import type { UnifiedRun } from '../hooks/useHistory'
-import type { Rule } from '../../../shared/ipcChannels'
+import type { Rule, UndoRunResponse } from '../../../shared/ipcChannels'
+import { useUndo } from '../hooks/useUndo'
 
 // Helper component to render a snapshot object as a file tree
 type SnapshotNode = string | { [folderName: string]: SnapshotNode[] }
@@ -104,6 +106,20 @@ export function HistoryEntry({
   isExpanded: boolean
   onToggle: () => void
 }): React.JSX.Element {
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false)
+  const [undoSummary, setUndoSummary] = useState<UndoRunResponse | null>(null)
+  const { undoRunAction, isUndoing, error } = useUndo()
+
+  const handleUndoClick = async (): Promise<void> => {
+    try {
+      const response = await undoRunAction(run)
+      setShowConfirmDialog(false)
+      setUndoSummary(response)
+    } catch {
+      // The error is already caught and set in the hook to display
+    }
+  }
+
   const date = new Date(run.ran_at)
   const formattedDate = date.toLocaleDateString()
   const formattedTime = date.toLocaleTimeString([], {
@@ -130,6 +146,11 @@ export function HistoryEntry({
               {run.files_affected} file{run.files_affected !== 1 ? 's' : ''} affected
             </span>
 
+            {run.is_undo && (
+              <span className="px-2 py-0.5 bg-purple-50 text-purple-600 border border-purple-100 text-xs rounded-full font-bold ml-2 shrink-0">
+                Undo Run
+              </span>
+            )}
             {run.undone && (
               <span className="px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full font-bold ml-2 shrink-0">
                 Undone
@@ -145,32 +166,34 @@ export function HistoryEntry({
 
         {/* Right Side Controls */}
         <div className="flex items-center gap-2 shrink-0">
-          {/* Undo Button */}
-          <button
-            type="button"
-            className="h-10 px-4 border border-slate-200 rounded-lg flex items-center gap-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors shadow-sm disabled:opacity-50"
-            disabled={run.undone || run.isPendingSync}
-            onClick={(e) => {
-              e.stopPropagation()
-              // TODO: Implement undo logic
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* Undo Button — hidden for undo-run entries (no redo for MVP) */}
+          {!run.is_undo && !run.undone && (
+            <button
+              type="button"
+              className="h-10 px-4 border border-slate-200 rounded-lg flex items-center gap-2 text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 active:bg-slate-100 transition-colors shadow-sm disabled:opacity-50"
+              disabled={run.isPendingSync}
+              onClick={(e) => {
+                e.stopPropagation()
+                setShowConfirmDialog(true)
+              }}
             >
-              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
-              <path d="M3 3v5h5" />
-            </svg>
-            Undo
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+              </svg>
+              Undo
+            </button>
+          )}
 
           {/* Expand Toggle */}
           <button
@@ -200,7 +223,7 @@ export function HistoryEntry({
       {/* Expanded Content */}
       {isExpanded && (
         <div className="px-6 pb-6 pt-2 border-t border-slate-100 bg-slate-50/50 flex flex-col gap-6">
-          {/* Rules Section */}
+          {/* Rules Section... */}
           {Array.isArray(run.rules) && run.rules.length > 0 && (
             <div>
               <h3 className="text-[11px] font-extrabold uppercase tracking-widest text-slate-400 mb-3">
@@ -265,6 +288,183 @@ export function HistoryEntry({
               <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm overflow-x-auto max-h-80 overflow-y-auto">
                 <SnapshotTree snapshot={run.after_snapshot} />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Undo Confirmation Overlay */}
+      {showConfirmDialog && !undoSummary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="undo-confirm-title"
+          >
+            <div className="p-6">
+              <h3 id="undo-confirm-title" className="text-xl font-bold text-slate-900">
+                Undo Organization Run?
+              </h3>
+              <p className="mt-3 text-slate-600">
+                Are you sure you want to undo this run? {run.files_affected} file
+                {run.files_affected !== 1 ? 's' : ''} will be moved back to{' '}
+                <strong>{run.folder_path}</strong>. Folders created by this run will remain to
+                ensure no personal data is lost.
+              </p>
+              {error && (
+                <div className="mt-4 p-3 bg-red-50 text-red-700 text-sm font-medium rounded-lg border border-red-100">
+                  {error.message}
+                </div>
+              )}
+            </div>
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-bold text-slate-700 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors disabled:opacity-50"
+                onClick={() => setShowConfirmDialog(false)}
+                disabled={isUndoing}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="px-4 py-2 text-sm font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors relative disabled:opacity-50 disabled:cursor-not-allowed min-w-[100px]"
+                onClick={handleUndoClick}
+                disabled={isUndoing}
+              >
+                {isUndoing ? 'Undoing...' : 'Confirm Undo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Post-Undo Summary Modal */}
+      {undoSummary && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div
+            className="bg-white rounded-xl shadow-xl w-full max-w-[600px] overflow-hidden flex flex-col max-h-[90vh]"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="undo-summary-title"
+          >
+            <div className="p-6 pb-4 border-b border-slate-100">
+              <h3
+                id="undo-summary-title"
+                className="text-xl font-bold flex items-center gap-2 text-slate-900"
+              >
+                {undoSummary.success ? (
+                  <>
+                    <svg
+                      className="w-6 h-6 text-green-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Undo Completed
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      className="w-6 h-6 text-amber-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2.5}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                    Undo Partially Completed
+                  </>
+                )}
+              </h3>
+              <p className="mt-2 text-slate-600 text-sm">
+                Successfully restored <strong>{undoSummary.restoredFiles.length}</strong> file
+                {undoSummary.restoredFiles.length !== 1 ? 's' : ''}.
+              </p>
+            </div>
+
+            <div className="p-6 overflow-y-auto flex-1 flex flex-col gap-6">
+              {/* Skipped Files */}
+              {undoSummary.skippedFiles.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                    Skipped Files ({undoSummary.skippedFiles.length})
+                  </h4>
+                  <ul className="bg-amber-50 rounded-lg p-1 border border-amber-100/50">
+                    {undoSummary.skippedFiles.map((err, i) => (
+                      <li key={i} className="px-3 py-2 text-sm flex flex-col">
+                        <span className="font-bold text-slate-800 break-all">{err.fileName}</span>
+                        <span className="text-slate-600 text-xs mt-0.5">{err.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Touched Folders left behind */}
+              {undoSummary.touchedFolders.length > 0 && (
+                <div>
+                  <h4 className="text-xs font-extrabold uppercase tracking-widest text-slate-500 mb-3 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-blue-400 inline-block"></span>
+                    Folders Left Behind ({undoSummary.touchedFolders.length})
+                  </h4>
+                  <ul className="bg-slate-50 rounded-lg border border-slate-200 divide-y divide-slate-100 overflow-hidden">
+                    {undoSummary.touchedFolders.map((folder, i) => (
+                      <li
+                        key={i}
+                        className="px-4 py-2.5 text-sm font-bold text-slate-700 break-all flex items-center gap-3"
+                      >
+                        <svg
+                          className="w-4 h-4 text-slate-400 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                          />
+                        </svg>
+                        {folder}
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-xs text-slate-500 mt-2 px-1">
+                    These folders were modified by the organization run. These are left intact to
+                    prevent accidental deletion of personal files.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+              <button
+                type="button"
+                className="px-5 py-2.5 text-sm font-bold text-white bg-slate-900 rounded-lg hover:bg-slate-800 transition-colors"
+                onClick={() => {
+                  setUndoSummary(null)
+                  // Could optionally trigger a re-fetch of history here if we exposed a refetch method
+                  // For now, React Query will refetch on focus or we can rely on polling/cache invalidation
+                }}
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

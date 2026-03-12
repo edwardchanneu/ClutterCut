@@ -91,6 +91,23 @@ export interface ExecuteRulesResponse {
 }
 
 // ---------------------------------------------------------------------------
+// UNDO_RUN
+// ---------------------------------------------------------------------------
+
+export const UNDO_RUN = 'UNDO_RUN'
+
+export interface UndoRunRequest {
+  run: QueuedRun
+}
+
+export interface UndoRunResponse {
+  success: boolean
+  restoredFiles: string[]
+  skippedFiles: { fileName: string; reason: string }[]
+  touchedFolders: string[]
+}
+
+// ---------------------------------------------------------------------------
 // OFFLINE QUEUE
 // ---------------------------------------------------------------------------
 

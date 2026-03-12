@@ -7,7 +7,9 @@ import type {
   ExecuteRulesResponse,
   QueuedRun,
   SaveRunOfflineRequest,
-  RemoveOfflineRunRequest
+  RemoveOfflineRunRequest,
+  UndoRunRequest,
+  UndoRunResponse
 } from '../shared/ipcChannels'
 
 declare global {
@@ -22,6 +24,7 @@ declare global {
       removeOfflineRun: (
         req: RemoveOfflineRunRequest
       ) => Promise<{ success: boolean; error?: string }>
+      undoRun: (req: UndoRunRequest) => Promise<UndoRunResponse>
     }
   }
 }
