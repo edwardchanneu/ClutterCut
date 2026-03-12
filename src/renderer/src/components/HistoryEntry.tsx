@@ -438,7 +438,7 @@ export function HistoryEntry({
                     ))}
                   </ul>
                   <p className="text-xs text-slate-500 mt-2 px-1">
-                    These folders were modified by the organization run. We kept them intact to
+                    These folders were modified by the organization run. These are left intact to
                     prevent accidental deletion of personal files.
                   </p>
                 </div>
