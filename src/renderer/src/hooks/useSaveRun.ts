@@ -47,21 +47,15 @@ export function useSaveRun(): {
     }
 
     try {
-      let runSavedLocal = false
-
       if (isOnline) {
+        // Prepare the payload for Supabase
         const payload = { ...runData, synced_at: now }
+
         const { error: dbError } = await supabase.from('organization_runs').insert(payload)
 
-        if (dbError) {
-          console.warn('Supabase save failed, falling back to local queue:', dbError)
-          runSavedLocal = true
-        }
+        if (dbError) throw dbError
       } else {
-        runSavedLocal = true
-      }
-
-      if (runSavedLocal) {
+        // Save to offline queue via IPC
         const response = await window.api.saveRunOffline({ run: runData })
         if (!response.success) {
           throw new Error(response.error || 'Failed to save offline run')

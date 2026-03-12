@@ -11,7 +11,6 @@ import SuccessScreen from './screens/SuccessScreen'
 import FailureScreen from './screens/FailureScreen'
 import { useAuth } from './hooks/useAuth'
 import { useSyncQueue } from './hooks/useSyncQueue'
-import { OfflineIndicator } from './components/OfflineIndicator'
 
 export function AppRoutes(): React.JSX.Element {
   const { session, loading } = useAuth()
@@ -60,7 +59,6 @@ export function AppRoutes(): React.JSX.Element {
 function App(): React.JSX.Element {
   return (
     <GuestProvider>
-      <OfflineIndicator />
       <HashRouter>
         <AppRoutes />
       </HashRouter>
