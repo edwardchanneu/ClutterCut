@@ -16,7 +16,3 @@
 2. Add unit tests for individual React components using Vitest and React Testing Library.
 3. Add a feature to "Undo" an organization run by reading the database snapshots.
 
-## Sprint Metrics
-- **Planned Points**: 20
-- **Completed Points**: 20
-- **Carryover**: 0

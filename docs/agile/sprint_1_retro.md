@@ -16,7 +16,3 @@
 2. Consolidate IPC channels into a `shared` folder so both main and renderer have strong typings.
 3. Begin core file manipulation logic (read/move) in the main process.
 
-## Sprint Metrics
-- **Planned Points**: 15
-- **Completed Points**: 12
-- **Carryover**: 3 (Minor UI polish on the Login page moved to next sprint)
