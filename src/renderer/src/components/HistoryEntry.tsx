@@ -18,15 +18,20 @@ function SnapshotTree({ snapshot }: { snapshot: unknown }): React.JSX.Element {
 
   // We'll recursively parse and render
   const renderNodes = (nodes: SnapshotNode[], depth = 0): React.ReactNode => {
-    return nodes.map((node, i) => {
-      // If node is a string, it's a file
-      if (typeof node === 'string') {
-        return (
+    const files = nodes.filter((n) => typeof n === 'string') as string[]
+    const folders = nodes.filter((n) => typeof n === 'object' && n !== null) as Record<
+      string,
+      SnapshotNode[]
+    >[]
+
+    return (
+      <>
+        {files.map((file, i) => (
           <li
-            key={`file-${depth}-${node}-${i}`}
+            key={`file-${depth}-${file}-${i}`}
             className="flex items-center text-sm font-medium text-slate-600 py-1"
             style={{ marginLeft: `${depth * 1.5}rem` }}
-            title={node}
+            title={file}
           >
             <span
               aria-hidden="true"
@@ -34,53 +39,49 @@ function SnapshotTree({ snapshot }: { snapshot: unknown }): React.JSX.Element {
             >
               -
             </span>
-            <span className="truncate ml-2">{node}</span>
+            <span className="truncate ml-2">{file}</span>
           </li>
-        )
-      }
-
-      // If node is an object, it's a folder: { "FolderName": [contents...] }
-      if (typeof node === 'object' && node !== null) {
-        return Object.entries(node).map(([folderName, contents]) => {
-          const itemCount = Array.isArray(contents)
-            ? contents.filter((c) => typeof c === 'string').length
-            : 0
-          return (
-            <div key={`folder-${depth}-${folderName}-${i}`} className="mt-1">
-              <li
-                className="flex items-center gap-2 mb-1"
-                style={{ marginLeft: `${depth * 1.5}rem` }}
-                title={folderName}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-slate-400 shrink-0"
+        ))}
+        {folders.map((folderObj, i) =>
+          Object.entries(folderObj).map(([folderName, contents], j) => {
+            const itemCount = Array.isArray(contents)
+              ? contents.filter((c) => typeof c === 'string').length
+              : 0
+            return (
+              <div key={`folder-${depth}-${folderName}-${i}-${j}`} className="mt-1">
+                <li
+                  className="flex items-center gap-2 mb-1"
+                  style={{ marginLeft: `${depth * 1.5}rem` }}
+                  title={folderName}
                 >
-                  <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-                </svg>
-                <span className="font-bold text-slate-800 truncate">{folderName}</span>
-                {itemCount > 0 && (
-                  <span className="text-xs font-normal text-slate-400 shrink-0">
-                    ({itemCount} item{itemCount !== 1 ? 's' : ''})
-                  </span>
-                )}
-              </li>
-              {Array.isArray(contents) && renderNodes(contents, depth + 1)}
-            </div>
-          )
-        })
-      }
-
-      return null
-    })
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-slate-400 shrink-0"
+                  >
+                    <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
+                  </svg>
+                  <span className="font-bold text-slate-800 truncate">{folderName}</span>
+                  {itemCount > 0 && (
+                    <span className="text-xs font-normal text-slate-400 shrink-0">
+                      ({itemCount} item{itemCount !== 1 ? 's' : ''})
+                    </span>
+                  )}
+                </li>
+                {Array.isArray(contents) && renderNodes(contents, depth + 1)}
+              </div>
+            )
+          })
+        )}
+      </>
+    )
   }
 
   return (
