@@ -106,4 +106,26 @@ describe('useSaveRun', () => {
     expect(queuePayload.files_affected).toBe(3)
     expect(queuePayload.synced_at).toBeUndefined()
   })
+
+  it('should fallback to offline queue when online but Supabase fails', async () => {
+    Object.defineProperty(navigator, 'onLine', { value: true, configurable: true })
+    const insertMock = vi.fn().mockResolvedValueOnce({ error: new Error('Network Error') })
+    vi.mocked(supabase.from).mockReturnValue({ insert: insertMock } as unknown as ReturnType<
+      typeof supabase.from
+    >)
+
+    mockSaveRunOffline.mockResolvedValueOnce({ success: true })
+
+    const { result } = renderHook(() => useSaveRun())
+
+    await act(async () => {
+      await result.current.saveRun('user-5', '/fallback', [], {}, {}, 2)
+    })
+
+    expect(insertMock).toHaveBeenCalled()
+    expect(mockSaveRunOffline).toHaveBeenCalled()
+    const queuePayload = mockSaveRunOffline.mock.calls[0][0].run
+    expect(queuePayload.user_id).toBe('user-5')
+    expect(queuePayload.folder_path).toBe('/fallback')
+  })
 })
