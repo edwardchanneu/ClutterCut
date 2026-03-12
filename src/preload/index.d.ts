@@ -4,7 +4,10 @@ import type {
   ReadFolderRequest,
   ReadFolderResponse,
   ExecuteRulesRequest,
-  ExecuteRulesResponse
+  ExecuteRulesResponse,
+  QueuedRun,
+  SaveRunOfflineRequest,
+  RemoveOfflineRunRequest
 } from '../shared/ipcChannels'
 
 declare global {
@@ -14,6 +17,11 @@ declare global {
       selectFolder: () => Promise<SelectFolderResponse>
       readFolder: (req: ReadFolderRequest) => Promise<ReadFolderResponse>
       executeRules: (req: ExecuteRulesRequest) => Promise<ExecuteRulesResponse>
+      saveRunOffline: (req: SaveRunOfflineRequest) => Promise<{ success: boolean; error?: string }>
+      getOfflineRuns: () => Promise<{ success: boolean; runs: QueuedRun[]; error?: string }>
+      removeOfflineRun: (
+        req: RemoveOfflineRunRequest
+      ) => Promise<{ success: boolean; error?: string }>
     }
   }
 }

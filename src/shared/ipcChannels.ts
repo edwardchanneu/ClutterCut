@@ -89,3 +89,33 @@ export interface ExecuteRulesResponse {
   /** ClutterCut-touched folders as objects with moved files as values; untouched subdirectories remain as plain strings */
   afterSnapshot: Record<string, (string | Record<string, string[]>)[]>
 }
+
+// ---------------------------------------------------------------------------
+// OFFLINE QUEUE
+// ---------------------------------------------------------------------------
+
+export const SAVE_RUN_OFFLINE = 'SAVE_RUN_OFFLINE'
+export const GET_OFFLINE_RUNS = 'GET_OFFLINE_RUNS'
+export const REMOVE_OFFLINE_RUN = 'REMOVE_OFFLINE_RUN'
+
+export interface QueuedRun {
+  id: string
+  user_id: string
+  folder_path: string
+  ran_at: string
+  rules: unknown
+  before_snapshot: unknown
+  after_snapshot: unknown
+  files_affected: number
+  is_undo: boolean
+  undone: boolean
+  parent_run_id: string | null
+}
+
+export interface SaveRunOfflineRequest {
+  run: QueuedRun
+}
+
+export interface RemoveOfflineRunRequest {
+  runId: string
+}

@@ -23,6 +23,9 @@ describe('App Integration Routing', () => {
     vi.clearAllMocks()
     localStorage.clear()
     window.location.hash = ''
+    window.api = {
+      getOfflineRuns: vi.fn().mockResolvedValue({ success: true, runs: [], error: null })
+    } as unknown as typeof window.api
   })
 
   it('renders loading state initially while checking session', async () => {

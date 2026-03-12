@@ -10,9 +10,11 @@ import SignUpScreen from './screens/SignUpScreen'
 import SuccessScreen from './screens/SuccessScreen'
 import FailureScreen from './screens/FailureScreen'
 import { useAuth } from './hooks/useAuth'
+import { useSyncQueue } from './hooks/useSyncQueue'
 
 export function AppRoutes(): React.JSX.Element {
   const { session, loading } = useAuth()
+  useSyncQueue()
 
   if (loading) {
     return (
