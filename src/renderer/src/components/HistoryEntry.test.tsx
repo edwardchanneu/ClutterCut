@@ -152,4 +152,43 @@ describe('HistoryEntry Undo functionality', () => {
     expect(screen.getByText('Folders Left Behind (1)')).toBeInTheDocument()
     expect(screen.getByText('/Users/test/Downloads/Docs')).toBeInTheDocument()
   })
+
+  it('displays "Undo Partially Completed" when some files are skipped', async () => {
+    const mockUndoRunAction = vi.fn().mockResolvedValue({
+      success: false,
+      restoredFiles: ['kept.pdf'],
+      skippedFiles: [
+        { fileName: 'missing.pdf', reason: 'File no longer exists at moved location.' }
+      ],
+      touchedFolders: ['Docs']
+    } as UndoRunResponse)
+
+    vi.mocked(useUndo).mockReturnValue({
+      undoRunAction: mockUndoRunAction,
+      isUndoing: false,
+      error: null
+    })
+
+    const onToggle = vi.fn()
+    render(<HistoryEntry run={mockRun} isExpanded={false} onToggle={onToggle} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /Undo/i }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Undo' }))
+
+    expect(mockUndoRunAction).toHaveBeenCalledWith(mockRun)
+
+    const summaryHeading = await screen.findByText('Undo Partially Completed')
+    expect(summaryHeading).toBeInTheDocument()
+
+    // Shows how many files were actually restored
+    expect(screen.getByText(/Successfully restored/)).toBeInTheDocument()
+    expect(
+      screen.getByText((_, el) => el?.tagName === 'P' && /1 file\./.test(el.textContent ?? ''))
+    ).toBeInTheDocument()
+
+    // Shows the skipped file and its reason
+    expect(screen.getByText('Skipped Files (1)')).toBeInTheDocument()
+    expect(screen.getByText('missing.pdf')).toBeInTheDocument()
+    expect(screen.getByText('File no longer exists at moved location.')).toBeInTheDocument()
+  })
 })
