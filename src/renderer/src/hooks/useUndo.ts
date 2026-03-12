@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import type { QueuedRun, UndoRunResponse } from '../../../shared/ipcChannels'
 import { updateRunStatus, insertRun } from '../lib/runs'
 
@@ -9,6 +10,7 @@ export function useUndo(): {
 } {
   const [isUndoing, setIsUndoing] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const queryClient = useQueryClient()
 
   const undoRunAction = async (originalRun: QueuedRun): Promise<UndoRunResponse> => {
     setIsUndoing(true)
@@ -60,6 +62,10 @@ export function useUndo(): {
       }
 
       await insertRun(newRunRecord)
+
+      // Invalidate queries so the history automatically refetches
+      queryClient.invalidateQueries({ queryKey: ['runs'] })
+      queryClient.invalidateQueries({ queryKey: ['localRuns'] })
 
       return response
     } catch (err: unknown) {
