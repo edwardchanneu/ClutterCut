@@ -5,7 +5,15 @@ import App, { AppRoutes } from './App'
 import { supabase } from './lib/supabase'
 import { MemoryRouter } from 'react-router-dom'
 import { GuestProvider } from './context/GuestProvider'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false
+    }
+  }
+})
 vi.mock('./lib/supabase', () => ({
   supabase: {
     auth: {
@@ -23,6 +31,9 @@ describe('App Integration Routing', () => {
     vi.clearAllMocks()
     localStorage.clear()
     window.location.hash = ''
+    window.api = {
+      getOfflineRuns: vi.fn().mockResolvedValue({ success: true, runs: [], error: null })
+    } as unknown as typeof window.api
   })
 
   it('renders loading state initially while checking session', async () => {
@@ -35,7 +46,11 @@ describe('App Integration Routing', () => {
       sessionPromise as unknown as ReturnType<typeof supabase.auth.getSession>
     )
 
-    render(<App />)
+    render(
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    )
 
     expect(screen.getByText(/checking session/i)).toBeInTheDocument()
 
@@ -55,7 +70,11 @@ describe('App Integration Routing', () => {
       data: { subscription: { unsubscribe: vi.fn() } }
     } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>)
 
-    render(<App />)
+    render(
+      <QueryClientProvider client={queryClient}>
+        <App />
+      </QueryClientProvider>
+    )
 
     // Wait for Login to render
     await waitFor(() => {
@@ -84,11 +103,13 @@ describe('App Integration Routing', () => {
     } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>)
 
     render(
-      <GuestProvider>
-        <MemoryRouter initialEntries={['/login']}>
-          <AppRoutes />
-        </MemoryRouter>
-      </GuestProvider>
+      <QueryClientProvider client={queryClient}>
+        <GuestProvider>
+          <MemoryRouter initialEntries={['/login']}>
+            <AppRoutes />
+          </MemoryRouter>
+        </GuestProvider>
+      </QueryClientProvider>
     )
 
     await waitFor(() => {
@@ -109,11 +130,13 @@ describe('App Integration Routing', () => {
     } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>)
 
     render(
-      <GuestProvider>
-        <MemoryRouter initialEntries={['/unknown-route']}>
-          <AppRoutes />
-        </MemoryRouter>
-      </GuestProvider>
+      <QueryClientProvider client={queryClient}>
+        <GuestProvider>
+          <MemoryRouter initialEntries={['/unknown-route']}>
+            <AppRoutes />
+          </MemoryRouter>
+        </GuestProvider>
+      </QueryClientProvider>
     )
 
     await waitFor(() => {
@@ -131,11 +154,13 @@ describe('App Integration Routing', () => {
     } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>)
 
     render(
-      <GuestProvider>
-        <MemoryRouter initialEntries={['/unknown-route']}>
-          <AppRoutes />
-        </MemoryRouter>
-      </GuestProvider>
+      <QueryClientProvider client={queryClient}>
+        <GuestProvider>
+          <MemoryRouter initialEntries={['/unknown-route']}>
+            <AppRoutes />
+          </MemoryRouter>
+        </GuestProvider>
+      </QueryClientProvider>
     )
 
     // Should render login screen
@@ -155,11 +180,13 @@ describe('App Integration Routing', () => {
     } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>)
 
     render(
-      <GuestProvider>
-        <MemoryRouter initialEntries={['/signup']}>
-          <AppRoutes />
-        </MemoryRouter>
-      </GuestProvider>
+      <QueryClientProvider client={queryClient}>
+        <GuestProvider>
+          <MemoryRouter initialEntries={['/signup']}>
+            <AppRoutes />
+          </MemoryRouter>
+        </GuestProvider>
+      </QueryClientProvider>
     )
 
     await waitFor(() => {
@@ -180,11 +207,13 @@ describe('App Integration Routing', () => {
     } as unknown as ReturnType<typeof supabase.auth.onAuthStateChange>)
 
     render(
-      <GuestProvider>
-        <MemoryRouter initialEntries={['/history']}>
-          <AppRoutes />
-        </MemoryRouter>
-      </GuestProvider>
+      <QueryClientProvider client={queryClient}>
+        <GuestProvider>
+          <MemoryRouter initialEntries={['/history']}>
+            <AppRoutes />
+          </MemoryRouter>
+        </GuestProvider>
+      </QueryClientProvider>
     )
 
     // We should see Organization History (which is on the HistoryScreen)

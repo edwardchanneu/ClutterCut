@@ -61,3 +61,78 @@ export interface ReadFolderResponse {
    */
   error: string | null
 }
+// ---------------------------------------------------------------------------
+// EXECUTE_RULES
+// Renderer sends a target folder and user-defined rules.
+// Main process moves the files according to the rules and returns a result snapshot.
+// ---------------------------------------------------------------------------
+
+export const EXECUTE_RULES = 'EXECUTE_RULES'
+
+export interface ExecuteRulesRequest {
+  folderPath: string
+  rules: Rule[]
+}
+
+/** Represents a JSON snapshot of the folder tree. */
+export interface FolderSnapshot {
+  /** Root directory path as key, array of top-level filenames and subdirectory names as strings */
+  [rootPath: string]: (string | Record<string, unknown>)[]
+}
+
+export interface ExecuteRulesResponse {
+  success: boolean
+  movedCount: number
+  failedCount: number
+  errors: { fileName: string; reason: string }[]
+  beforeSnapshot: Record<string, string[]>
+  /** ClutterCut-touched folders as objects with moved files as values; untouched subdirectories remain as plain strings */
+  afterSnapshot: Record<string, (string | Record<string, string[]>)[]>
+}
+
+// ---------------------------------------------------------------------------
+// UNDO_RUN
+// ---------------------------------------------------------------------------
+
+export const UNDO_RUN = 'UNDO_RUN'
+
+export interface UndoRunRequest {
+  run: QueuedRun
+}
+
+export interface UndoRunResponse {
+  success: boolean
+  restoredFiles: string[]
+  skippedFiles: { fileName: string; reason: string }[]
+  touchedFolders: string[]
+}
+
+// ---------------------------------------------------------------------------
+// OFFLINE QUEUE
+// ---------------------------------------------------------------------------
+
+export const SAVE_RUN_OFFLINE = 'SAVE_RUN_OFFLINE'
+export const GET_OFFLINE_RUNS = 'GET_OFFLINE_RUNS'
+export const REMOVE_OFFLINE_RUN = 'REMOVE_OFFLINE_RUN'
+
+export interface QueuedRun {
+  id: string
+  user_id: string
+  folder_path: string
+  ran_at: string
+  rules: unknown
+  before_snapshot: unknown
+  after_snapshot: unknown
+  files_affected: number
+  is_undo: boolean
+  undone: boolean
+  parent_run_id: string | null
+}
+
+export interface SaveRunOfflineRequest {
+  run: QueuedRun
+}
+
+export interface RemoveOfflineRunRequest {
+  runId: string
+}

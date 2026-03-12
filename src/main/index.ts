@@ -3,6 +3,9 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerFolderHandlers } from './ipc/folderHandlers'
+import { registerExecutionHandlers } from './ipc/executionHandlers'
+import { registerQueueHandlers } from './ipc/queueHandlers'
+import { registerUndoHandlers } from './ipc/undoHandlers'
 
 function createWindow(): void {
   // Create the browser window.
@@ -54,6 +57,9 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
 
   registerFolderHandlers()
+  registerExecutionHandlers()
+  registerQueueHandlers()
+  registerUndoHandlers()
 
   createWindow()
 
