@@ -15,19 +15,19 @@
 *   **Switch to App Screen (Guest Mode)**
     *   "Let's jump right in. To prove this works, we aren't using a fake test folder. We're going to clean up my actual Mac Desktop right now, live."
     *   *(Minimize the presentation to show a very messy macOS Desktop behind the ClutterCut app window).*
-    *   "I'll start as a Guest user. I'll click 'Choose Folder' and select my `Desktop`. You can see all these screenshots, PDFs, and random files literally sitting right here."
+    *   "I'll start as a Guest user. I'll click 'Choose Folder' and select my `Desktop`. You can see all these screenshots, screen recordings, MP4s, and random PDFs literally sitting right here."
 
 ## Part 2: Building Rules & The Preview Screen (3 mins)
 
 **(Speaker: Edward)**
 
 *   **Rule Configuration Screen**
-    *   "Now we're in the Rules Engine. We want to organize this mess safely. I'll add our first rule: 'If the File Extension is `pdf`, move it to a folder called `Readings`'."
-    *   "Let's add a second rule. This time, we'll use a Name Contains condition. 'If the Name Contains `hw`, move it to a folder called `Homework`'."
+    *   "Now we're in the Rules Engine. We want to organize this mess safely. I'll add our first rule: 'If the File Extension is `mp4`, move it to a folder called `Videos`'."
+    *   "Let's add a second rule. This time, we'll use a Name Contains condition. 'If the Name Contains `Screenshot`, move it to a folder called `Images`'."
 
 *   **Clicking "Next" to Preview**
     *   "This is the most important screen in the application: **The Preview Screen**. Notice that *no files have been moved yet*."
-    *   "ClutterCut runs a complete dry-run against the local filesystem using Node.js. It groups exactly what it plans to do: It shows us exactly which files are going into `Readings` and which are going into `Homework`."
+    *   "ClutterCut runs a complete dry-run against the local filesystem using Node.js. It groups exactly what it plans to do: It shows us exactly which files are going into `Videos` and which are going into `Images`."
     *   "If we don't like this, we can hit Back, and our rule state is preserved. But this looks perfect, so we're going to trust the app and click 'Approve & Organize'."
 
 *   **Success Screen & Live Cleanup**
