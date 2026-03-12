@@ -4,8 +4,8 @@
 
 ## What went well?
 - The preview screen provides a great user experience and caught several potential file organization bugs during development.
+- Successfully implemented complex multi-rule management and validation (extensions and name-contains rules).
 - E2E tests using Playwright are incredibly stable and correctly mock the Electron `dialog` module.
-- Successfully implemented both Guest and Authenticated flows without duplicating the core rules engine logic.
 
 ## What could be improved?
 - The `fs` operations are currently synchronous in some areas, which could block the Electron main thread on very large folders.
