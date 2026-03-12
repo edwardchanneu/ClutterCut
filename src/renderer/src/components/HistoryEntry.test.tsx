@@ -22,7 +22,7 @@ describe('HistoryEntry', () => {
     const onToggle = vi.fn()
     render(<HistoryEntry run={mockRun} isExpanded={false} onToggle={onToggle} />)
 
-    expect(screen.getByText('/Users/test/Downloads')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
     expect(screen.getByText('5 files affected')).toBeInTheDocument()
   })
 

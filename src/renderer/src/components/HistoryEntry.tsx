@@ -86,38 +86,11 @@ function SnapshotTree({ snapshot }: { snapshot: unknown }): React.JSX.Element {
 
   return (
     <ul className="flex flex-col gap-2">
-      {Object.entries(snapshotRec).map(([rootKey, rootVal]) => {
-        const itemCount = Array.isArray(rootVal)
-          ? rootVal.filter((c) => typeof c === 'string').length
-          : 0
-        return (
-          <div key={rootKey} className="min-w-0">
-            <li className="flex items-center gap-2 mb-1" title={rootKey}>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-slate-400 shrink-0"
-              >
-                <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z" />
-              </svg>
-              <span className="font-bold text-slate-800 truncate">{rootKey}</span>
-              {itemCount > 0 && (
-                <span className="text-xs font-normal text-slate-400 shrink-0">
-                  ({itemCount} item{itemCount !== 1 ? 's' : ''})
-                </span>
-              )}
-            </li>
-            {Array.isArray(rootVal) && renderNodes(rootVal, 1)}
-          </div>
-        )
-      })}
+      {Object.values(snapshotRec).map((rootVal, idx) => (
+        <div key={idx} className="min-w-0">
+          {Array.isArray(rootVal) && renderNodes(rootVal, 0)}
+        </div>
+      ))}
     </ul>
   )
 }
@@ -144,16 +117,15 @@ export function HistoryEntry({
       {/* Header */}
       <div className="p-6 flex justify-between items-start">
         <div className="flex flex-col gap-1 flex-1 min-w-0 pr-4">
-          {/* Path */}
-          <h2 className="text-xl font-extrabold text-slate-800 truncate" title={run.folder_path}>
-            {run.folder_path}
+          {/* Date and Time Header */}
+          <h2
+            className="text-xl font-extrabold text-slate-800 truncate"
+            title={`${formattedDate}, ${formattedTime}`}
+          >
+            {formattedDate}, {formattedTime}
           </h2>
           {/* Meta Row */}
           <div className="text-sm text-slate-500 font-medium flex items-center gap-2 mt-1 flex-wrap">
-            <span>
-              {formattedDate}, {formattedTime}
-            </span>
-            <span aria-hidden="true">&middot;</span>
             <span>
               {run.files_affected} file{run.files_affected !== 1 ? 's' : ''} affected
             </span>

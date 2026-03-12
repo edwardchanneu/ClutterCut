@@ -126,9 +126,11 @@ describe('HistoryScreen', () => {
     expect(screen.getByText('/Users/test/Downloads')).toBeInTheDocument()
     expect(screen.getByText('/Users/test/Desktop')).toBeInTheDocument()
 
-    // File counts
-    expect(screen.getByText('5 files affected')).toBeInTheDocument()
-    expect(screen.getByText('12 files affected')).toBeInTheDocument()
+    // Folder counts
+    expect(screen.getAllByText('1 run')).toHaveLength(2)
+
+    // Expand run 2 to see the badges
+    fireEvent.click(screen.getByText('/Users/test/Desktop'))
 
     // Undone badge and pending sync badge for run 2
     expect(screen.getByText('Undone')).toBeInTheDocument()
@@ -163,7 +165,10 @@ describe('HistoryScreen', () => {
     // Should not be expanded initially
     expect(screen.queryByText(/Rules Applied/i)).not.toBeInTheDocument()
 
-    // Click to expand
+    // Click to expand folder
+    fireEvent.click(screen.getByText('/Users/test/Downloads'))
+
+    // Click to expand run entry
     fireEvent.click(screen.getByRole('button', { name: 'Expand details' }))
 
     // Should be expanded: Rules and snapshots should be visible
