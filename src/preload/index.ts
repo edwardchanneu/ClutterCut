@@ -6,7 +6,8 @@ import {
   EXECUTE_RULES,
   SAVE_RUN_OFFLINE,
   GET_OFFLINE_RUNS,
-  REMOVE_OFFLINE_RUN
+  REMOVE_OFFLINE_RUN,
+  UNDO_RUN
 } from '../shared/ipcChannels'
 import type {
   ReadFolderRequest,
@@ -16,7 +17,9 @@ import type {
   ExecuteRulesResponse,
   QueuedRun,
   SaveRunOfflineRequest,
-  RemoveOfflineRunRequest
+  RemoveOfflineRunRequest,
+  UndoRunRequest,
+  UndoRunResponse
 } from '../shared/ipcChannels'
 
 // Custom APIs exposed to the renderer via contextBridge
@@ -31,7 +34,8 @@ const api = {
   getOfflineRuns: (): Promise<{ success: boolean; runs: QueuedRun[]; error?: string }> =>
     ipcRenderer.invoke(GET_OFFLINE_RUNS),
   removeOfflineRun: (req: RemoveOfflineRunRequest): Promise<{ success: boolean; error?: string }> =>
-    ipcRenderer.invoke(REMOVE_OFFLINE_RUN, req)
+    ipcRenderer.invoke(REMOVE_OFFLINE_RUN, req),
+  undoRun: (req: UndoRunRequest): Promise<UndoRunResponse> => ipcRenderer.invoke(UNDO_RUN, req)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

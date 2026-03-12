@@ -1,7 +1,17 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { HistoryEntry } from './HistoryEntry'
 import type { UnifiedRun } from '../hooks/useHistory'
+import { useUndo } from '../hooks/useUndo'
+import type { UndoRunResponse } from '../../../shared/ipcChannels'
+
+vi.mock('../hooks/useUndo', () => ({
+  useUndo: vi.fn(() => ({
+    undoRunAction: vi.fn(),
+    isUndoing: false,
+    error: null
+  }))
+}))
 
 describe('HistoryEntry', () => {
   const mockRun: UnifiedRun = {
@@ -52,5 +62,77 @@ describe('HistoryEntry', () => {
 
     expect(screen.getByText('Undone')).toBeInTheDocument()
     expect(screen.getByText('Pending Sync')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Undo/i })).toBeDisabled()
+  })
+})
+
+describe('HistoryEntry Undo functionality', () => {
+  const mockRun: UnifiedRun = {
+    id: '1',
+    user_id: 'user1',
+    folder_path: '/Users/test/Downloads',
+    ran_at: '2026-03-11T14:30:00Z',
+    files_affected: 5,
+    rules: [],
+    before_snapshot: {},
+    after_snapshot: {},
+    is_undo: false,
+    undone: false,
+    parent_run_id: null
+  }
+
+  beforeEach(() => {
+    vi.mocked(useUndo).mockReturnValue({
+      undoRunAction: vi.fn(),
+      isUndoing: false,
+      error: null
+    })
+  })
+
+  it('shows confirmation dialog when Undo is clicked, and hides on Cancel', () => {
+    const onToggle = vi.fn()
+    render(<HistoryEntry run={mockRun} isExpanded={false} onToggle={onToggle} />)
+
+    const undoButton = screen.getByRole('button', { name: /Undo/i })
+    fireEvent.click(undoButton)
+
+    expect(screen.getByText('Undo Organization Run?')).toBeInTheDocument()
+
+    const cancelButton = screen.getByRole('button', { name: /^Cancel$/i })
+    fireEvent.click(cancelButton)
+
+    expect(screen.queryByText('Undo Organization Run?')).not.toBeInTheDocument()
+  })
+
+  it('calls undoRunAction and displays summary on successful confirm', async () => {
+    const mockUndoRunAction = vi.fn().mockResolvedValue({
+      success: true,
+      restoredFiles: ['test.pdf'],
+      skippedFiles: [],
+      touchedFolders: ['/Users/test/Downloads/Docs']
+    } as UndoRunResponse)
+
+    vi.mocked(useUndo).mockReturnValue({
+      undoRunAction: mockUndoRunAction,
+      isUndoing: false,
+      error: null
+    })
+
+    const onToggle = vi.fn()
+    render(<HistoryEntry run={mockRun} isExpanded={false} onToggle={onToggle} />)
+
+    // Open confirm
+    fireEvent.click(screen.getByRole('button', { name: /Undo/i }))
+    // Confirm
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Undo' }))
+
+    expect(mockUndoRunAction).toHaveBeenCalledWith(mockRun)
+
+    // Await state updates
+    const summaryHeading = await screen.findByText('Undo Completed')
+    expect(summaryHeading).toBeInTheDocument()
+    expect(screen.getByText(/Successfully restored/)).toBeInTheDocument()
+    expect(screen.getByText('Folders Left Behind (1)')).toBeInTheDocument()
+    expect(screen.getByText('/Users/test/Downloads/Docs')).toBeInTheDocument()
   })
 })
