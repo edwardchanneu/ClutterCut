@@ -1,11 +1,8 @@
 # Sprint 2 Planning
 
 **Sprint Goal:** Implement the core file organization logic and finalize preview/history features.
-**Dates:** (Week 2)
+**Dates:** Feb 25, 2026 - Feb 27, 2026
 
-## Team Capacity and Roles
-- **Desktop Developer**: 100% Capacity, Focus: Node `fs` operations, Rule Engine
-- **Frontend Developer**: 100% Capacity, Focus: Rules UI, Preview UI, History page
 
 ## Planned Tickets/User Stories
 1. **[[Issue #18]](https://github.com/edwardchanneu/ClutterCut/issues/18)**: Implement Folder Selection via Native OS File Picker - *Assigned to: hcarminati*

@@ -1,11 +1,8 @@
 # Sprint 1 Planning
 
 **Sprint Goal:** Establish the foundational architecture, set up the desktop shell, and implement core authentication.
-**Dates:** (Week 1)
+**Dates:** Feb 24, 2026 - Feb 26, 2026
 
-## Team Capacity and Roles
-- **Desktop Developer**: 100% Capacity, Focus: Electron Setup, IPC
-- **Frontend Developer**: 100% Capacity, Focus: React, Tailwind, Supabase Auth
 
 ## Planned Tickets/User Stories
 1. **[[Issue #1]](https://github.com/edwardchanneu/ClutterCut/issues/1)**: Implement Email/Password Login Screen UI - *Assigned to: edwardchanneu*

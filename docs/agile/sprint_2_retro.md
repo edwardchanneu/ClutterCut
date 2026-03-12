@@ -1,6 +1,6 @@
 # Sprint 2 Retrospective
 
-**Date:** (End of Week 2)
+**Date:** Feb 27, 2026
 
 ## What went well?
 - The preview screen provides a great user experience and caught several potential file organization bugs during development.

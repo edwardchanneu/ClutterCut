@@ -1,6 +1,6 @@
 # Sprint 1 Retrospective
 
-**Date:** (End of Week 1)
+**Date:** Feb 26, 2026
 
 ## What went well?
 - Fast initial setup achieved using Electron-Vite template.
