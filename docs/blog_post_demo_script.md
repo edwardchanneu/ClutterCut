@@ -25,7 +25,7 @@
     *   "Security and stability were paramount. The React renderer never touches the file system. All file operations run exclusively in the Electron main process via Node.js `fs` APIs, communicating over clean IPC boundaries. For server state handling our async dependencies, we utilized TanStack Query so caching and loading states didn't bleed into component code."
 
 *   **Switch to App Screen (Guest Mode)**
-    *   "Let's show you what we built over the semester's five sprints. We'll clean up Heather's actual Mac Desktop right now, live. I'll start as a Guest user and select the `Desktop` folder."
+    *   "Let's show you what we built over the semester's three sprints. We'll clean up Heather's actual Mac Desktop right now, live. I'll start as a Guest user and select the `Desktop` folder."
 
 *   **Rule Configuration Screen**
     *   "Our core flow is simple: Select a folder, configure rules, preview, and approve."
