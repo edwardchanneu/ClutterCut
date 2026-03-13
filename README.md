@@ -18,6 +18,7 @@ An Electron application with React and TypeScript
 - [User Stories & Acceptance Criteria](docs/agile/user_stories.md)
 - [Sprint 1 Planning](docs/agile/sprint_1_plan.md) | [Sprint 1 Retro](docs/agile/sprint_1_retro.md)
 - [Sprint 2 Planning](docs/agile/sprint_2_plan.md) | [Sprint 2 Retro](docs/agile/sprint_2_retro.md)
+- [Daily Standup Updates](https://github.com/edwardchanneu/ClutterCut/blob/develop/docs/agile/standups.md)
 
 ## Project Setup
 
