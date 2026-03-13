@@ -37,3 +37,4 @@ lerna-debug.log*
 # testing
 playwright-report/
 test-results/
+coverage/

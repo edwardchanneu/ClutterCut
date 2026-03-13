@@ -31,6 +31,21 @@ $ npm install
 $ npm run dev
 ```
 
+## 🧪 Testing & Quality Dashboards
+
+ClutterCut includes visual dashboards for testing and code coverage.
+
+### Unit Tests (Vitest)
+
+- **Standard Run:** `npm run test`
+- **UI Dashboard:** `npm run test:ui` (Opens a browser interface to manage and run tests)
+- **Code Coverage:** `npm run test:coverage` (Generates and automatically opens an interactive HTML coverage report)
+
+### End-to-End Tests (Playwright)
+
+- **Run E2E Tests:** `npm run test:e2e`
+- **HTML Report:** `npm run test:e2e:report` (Opens the dashboard for the latest Playwright test run)
+
 ### Build
 
 ```bash
