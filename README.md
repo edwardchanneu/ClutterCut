@@ -36,7 +36,7 @@ ClutterCut includes visual dashboards for testing and code coverage.
 ### Unit Tests (Vitest)
 
 - **Standard Run:** `npm run test`
-- **UI Dashboard:** `npm run test:ui` (Opens a beautiful browser interface to manage and run tests)
+- **UI Dashboard:** `npm run test:ui` (Opens a browser interface to manage and run tests)
 - **Code Coverage:** `npm run test:coverage` (Generates and automatically opens an interactive HTML coverage report)
 
 ### End-to-End Tests (Playwright)
