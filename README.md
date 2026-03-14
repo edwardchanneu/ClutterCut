@@ -19,6 +19,7 @@ An Electron application with React and TypeScript
 - [Sprint 1 Planning](docs/agile/sprint_1_plan.md) | [Sprint 1 Retro](docs/agile/sprint_1_retro.md)
 - [Sprint 2 Planning](docs/agile/sprint_2_plan.md) | [Sprint 2 Retro](docs/agile/sprint_2_retro.md)
 - [Daily Standup Updates](https://github.com/edwardchanneu/ClutterCut/blob/develop/docs/agile/standups.md)
+- [Demo Video](https://www.youtube.com/watch?v=1qBC4gAsXSE)
 
 ## Project Setup
 
